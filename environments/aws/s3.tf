@@ -10,6 +10,6 @@ module "flyte_data" {
 }
 
 output "bucket" {
-  value = module.flyte_data.bucket.name
+  value = module.flyte_data.s3_bucket_id
   sensitive = false
 }

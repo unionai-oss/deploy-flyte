@@ -62,6 +62,6 @@ resource "helm_release" "external_dns" {
 }
 
 output "aws_acm_certificate" {
-  value = [aws_acm_certificate.fthw_demo.arn]
+  value = [aws_acm_certificate.flyte_cert.arn]
 
 }
