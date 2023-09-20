@@ -205,6 +205,15 @@ data "aws_iam_policy_document" "aws_for_fluent_bit_policy" {
   }
 }
 
+data "http" "alb-controller-policy-source" {
+  url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.4.7/docs/install/iam_policy.json"
+  method = "GET"
+}
+
+resource "aws_iam_policy" "aws-load-balancer-controller-iam-policy" {
+  name        = "${local.name_prefix}-alb-policy"
+  policy = data.http.alb-controller-policy-source.response_body
+}
 
 
 module "aws_load_balancer_controller_irsa_role" {
@@ -212,8 +221,8 @@ module "aws_load_balancer_controller_irsa_role" {
   version = "5.11.2"
 
   role_name                              = "${local.name_prefix}-aws-load-balancer-controller"
-  attach_load_balancer_controller_policy = true
-
+  attach_load_balancer_controller_policy = false
+  
   oidc_providers = {
     ex = {
       provider_arn               = module.eks.oidc_provider_arn
@@ -222,6 +231,11 @@ module "aws_load_balancer_controller_irsa_role" {
   }
 }
 
+resource "aws_iam_role_policy_attachment" "alb-policy-attachment" {
+  role      = module.aws_load_balancer_controller_irsa_role.iam_role_name
+  policy_arn = aws_iam_policy.aws-load-balancer-controller-iam-policy.arn
+  
+  }
 module "cluster_autoscaler_irsa_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "5.11.2"
