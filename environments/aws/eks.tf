@@ -131,22 +131,13 @@ module "eks" {
         "k8s.io/cluster-autoscaler/enabled"              = true
         "k8s.io/cluster-autoscaler/${local.name_prefix}" = true
       }
-      taints = concat(
-        v.gpu_count == 0 ? [] : [
+      taints = v.gpu_count == 0 ? [] : [
           {
             key    = "nvidia.com/gpu"
             value  = "present"
             effect = "NO_SCHEDULE"
           }
-        ],
-        v.dedicated_node_role == null ? [] : [
-          {
-            key    = "flyte.org/node-role"
-            value  = v.dedicated_node_role
-            effect = "NO_SCHEDULE"
-          }
         ]
-      )
     }
   }
 }
