@@ -60,7 +60,9 @@ output "db_host" {
 
 }
 
-output "db-password" {
-  value = module.flyte-db.generated_user_password
+
+output user_password {
+  value = module.flyte-db.additional_users
   sensitive = true
+
 }

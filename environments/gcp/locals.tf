@@ -1,6 +1,6 @@
 locals {
   application            = "flyte"
-  environment            = "terraform1"
+  environment            = "terraform2"
   name_prefix            = "${local.application}-${local.environment}"
   region                 = data.google_client_config.current.region
   project_id             = data.google_project.current.project_id
