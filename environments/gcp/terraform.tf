@@ -5,6 +5,11 @@ terraform {
       version = ">= 4.41.0"
     }
 
+     kubectl = {
+      source  = "alekc/kubectl"
+      version = ">= 2.0.2"
+    }
+
     google-beta = {
       source  = "hashicorp/google-beta"
       version = ">= 4.41.0"
