@@ -8,7 +8,7 @@ module "network" {
   subnets = [
     {
       subnet_name           = "gke"
-      subnet_ip             = "10.0.0.0/8"
+      subnet_ip             = "10.10.10.0/24"
       subnet_region         = local.region
       subnet_private_access = true
     }

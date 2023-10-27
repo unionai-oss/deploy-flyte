@@ -1,0 +1,102 @@
+
+
+configuration:
+  database:
+    username: flyte
+    password: "3LPHFjl5Kzbab2TVeYuJhpcFkLYhr9N7"
+    host: 10.220.0.3
+    dbname: flyte
+  storage:
+    metadataContainer: "flyte-terraform2-data"
+    userDataContainer: "flyte-terraform2-user-data"
+    provider: gcs
+    providerConfig:
+      gcs:
+        project: flyte-terraform1
+  logging:
+    level: 5
+    plugins:
+      stackdriver:
+        enabled: false
+        templateUri: |-
+          https://console.cloud.google.com/logs/viewer?project=osscluster&angularJsUrl=%2Flogs%2Fviewer%3Fproject%3Dosscluster&resource=k8s_container&advancedFilter=resource.labels.pod_name%3D{{ .podName }}
+  inline:
+    cluster_resources:
+      customData:
+      - production:
+        - defaultIamRole:
+            value: "flyte-terraform2-flyte-workerr@flyte-terraform1.iam.gserviceaccount.com"
+      - staging:
+        - defaultIamRole:
+            value: "flyte-terraform2-flyte-worker@flyte-terraform1.iam.gserviceaccount.com"
+      - development:
+        - defaultIamRole:
+            value: "flyte-terraform2-flyte-worker@flyte-terraform1.iam.gserviceaccount.com"
+    task_resources:
+      defaults:
+        cpu: 1
+        memory: 1Gi
+        storage: 1Gi
+      limits:
+        cpu: 64
+        gpu: 8
+        memory: 100Gi
+        storage: 100Gi
+clusterResourceTemplates:
+  inline:
+    001_namespace.yaml: |
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: '{{ namespace }}'
+    002_serviceaccount.yaml: |
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: default
+        namespace: '{{ namespace }}'
+        annotations:
+          iam.gke.io/gcp-service-account: '{{ defaultIamRole }}'
+deployment:
+  resources:
+    limits:
+      memory: 1Gi
+    requests:
+      cpu: 1
+rbac:
+  extraRules:
+  - apiGroups:
+    - ""
+    resources:
+    - serviceaccounts
+    verbs:
+    - create
+    - get
+    - list
+    - patch
+    - update
+serviceAccount:
+  create: true
+  annotations:
+    iam.gke.io/gcp-service-account: flyte-terraform2-flyte-binary@flyte-terraform1.iam.gserviceaccount.com
+
+ingress:
+   create: true
+   host: flyte-the-hard-way.gcp.run
+   tls:
+     - hosts: 
+       - flyte-the-hard-way.gcp.run
+       secretName: flyte-the-hard-way.gcp.run
+   annotations:
+     kubernetes.io/ingress.class: nginx
+     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+     acme.cert-manager.io/http01-edit-in-place: "true"
+     cert-manager.io/issuer: letsencrypt-production
+# --- separateGrpcIngress puts GRPC routes into a separate ingress if true. Required for certain ingress controllers like nginx.
+     separateGrpcIngress: true
+    # --- Extra Ingress annotations applied only to the GRPC ingress. Only makes sense if `separateGrpcIngress` is enabled.
+     separateGrpcIngressAnnotations:
+       nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+   
+   
+  

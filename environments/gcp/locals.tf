@@ -8,4 +8,6 @@ locals {
   flyte_projects         = ["flytesnacks"]
   flyte_domains          = ["development", "staging", "production"]
   flyte_ksas             = ["default", "spark"]
+  dns-domain =           "gcp.run"
+  flyte-host =           "${local.application}.${local.dns-domain}"
 }

@@ -55,13 +55,13 @@ module "flyte-db" {
 
 
 
-output "db_host" {
+output "db-host" {
   value = module.flyte-db.instance_ip_address
 
 }
 
 
-output user_password {
+output db-password {
   value = module.flyte-db.additional_users
   sensitive = true
 
