@@ -1,7 +1,7 @@
 #Use this section to configure the parameters for your environment. Use the outputs from the Terraform execution.
 userSettings:
   googleProjectId: <PROJECT-ID> #gcloud projects list
-  dbHost: <db-host> 
+  dbHost: "<db-host>" #Use "ip_address" from the db-host output 
   dbPassword: <db-password>
   bucketName: <gcs_bucket_name>
   hostName: <your-flyte-host-name> #Domain name you will use to connect to Flyte
@@ -90,15 +90,16 @@ serviceAccount:
 
 ingress:
    create: true
+   ingressClassName: nginx
    host: "{{ .Values.userSettings.hostName}}"
    tls:
      - hosts: 
        - "{{ .Values.userSettings.hostName}}"
        secretName: flyte-secret-tls
    commonAnnotations:
-     kubernetes.io/ingress.class: "nginx"
      nginx.ingress.kubernetes.io/ssl-redirect: "true"
      cert-manager.io/issuer: "letsencrypt-production"
+     acme.cert-manager.io/http01-edit-in-place: "true"
    httpAnnotations:
     nginx.ingress.kubernetes.io/app-root: /console
    grpcAnnotations:
