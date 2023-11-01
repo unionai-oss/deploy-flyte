@@ -1,10 +1,10 @@
-#Use this section to configure the parameters for your environment
+#Use this section to configure the parameters for your environment. Use the outputs from the Terraform execution.
 userSettings:
-  googleProjectId: <PROJECT-ID>
-  dbHost: <CloudSQL-IP>
-  dbPassword: <DBPASSWORD>
-  bucketName: <GCS_BUCKET_NAME>
-  hostName: <HOSTNAME>
+  googleProjectId: <PROJECT-ID> #gcloud projects list
+  dbHost: <db-host> 
+  dbPassword: <db-password>
+  bucketName: <gcs_bucket_name>
+  hostName: <your-flyte-host-name> #Domain name you will use to connect to Flyte
   IAMWorkerRole: <GCP-WORKER-SERVICE-ACCOUNT>
   IAMBackendRole: <GCP-BINARY-SERVICE-ACCOUNT>
 

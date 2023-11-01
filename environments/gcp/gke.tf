@@ -9,7 +9,7 @@ module "gke" {
   project_id               = local.project_id
   region                   = local.region
   name                     = local.name_prefix
-  regional                 = true
+  regional                 = false
   release_channel          = "STABLE"
   network                  = module.network.network_name
   subnetwork               = local.gke_subnetwork
