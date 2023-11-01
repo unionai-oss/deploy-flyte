@@ -1,3 +1,9 @@
+resource "google_iam_workload_identity_pool" "workload-identity-pool" {
+  workload_identity_pool_id = "${local.project_id}"
+}
+#add this
+
+
 resource "google_service_account" "flyte_binary" {
   account_id = "${local.name_prefix}-flyte-binary"
 }
@@ -9,7 +15,7 @@ data "google_iam_policy" "flyte_binary_workload_identity" {
   }
 
   binding {
-    members = ["serviceAccount:${local.workload_identity_pool}[flyte/flyte-binary]"]
+    members = ["serviceAccount:${local.workload_identity_pool}.svc.id.goog[flyte/flyte-binary]"]
     role    = "roles/iam.workloadIdentityUser"
   }
 }
@@ -35,7 +41,7 @@ locals {
 
 data "google_iam_policy" "flyte_worker_workload_identity" {
   binding {
-    members = formatlist("serviceAccount:${local.workload_identity_pool}[%s]", local.flyte_worker_wi_members)
+    members = formatlist("serviceAccount:${local.workload_identity_pool}.svc.id.goog[%s]", local.flyte_worker_wi_members)
     role    = "roles/iam.workloadIdentityUser"
   }
 }
@@ -55,3 +61,4 @@ output "gcp-worker-service-account" {
   value = google_service_account.flyte_worker.account_id
   
 }
+

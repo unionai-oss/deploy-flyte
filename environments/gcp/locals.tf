@@ -1,13 +1,13 @@
 locals {
   application            = "flyte"
-  environment            = "terraform2"
+  environment            = "terraform"
   name_prefix            = "${local.application}-${local.environment}"
   region                 = data.google_client_config.current.region
   project_id             = data.google_project.current.project_id
-  workload_identity_pool = "${local.project_id}.svc.id.goog"
+  workload_identity_pool = "${local.project_id}"
   flyte_projects         = ["flytesnacks"]
   flyte_domains          = ["development", "staging", "production"]
-  flyte_ksas             = ["default", "spark"]
-  dns-domain =           "gcp.run"
+  flyte_ksas             = ["default"]
+  dns-domain =           "gcp.run" #replace with your CloudDNS domain
   flyte-host =           "${local.application}.${local.dns-domain}"
 }

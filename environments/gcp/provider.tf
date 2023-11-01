@@ -1,10 +1,10 @@
 provider "google" {
-  project = "flyte-terraform1"
+  project = "flyte-terraform1-403721" #Replace with your project name
   region  = "us-east1"
 }
 
 provider "google-beta" {
-  project = "flyte-terraform1"
+  project = "flyte-terraform1-403721" #Replace with your project name
   region  = "us-east1"
 }
 
@@ -17,6 +17,7 @@ provider "kubernetes" {
 provider "kubectl" {
  host                   = "https://${module.gke.endpoint}"
   token                  = data.google_client_config.current.access_token
+  
   cluster_ca_certificate = base64decode(module.gke.ca_certificate) 
   
 }

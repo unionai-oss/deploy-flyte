@@ -14,11 +14,24 @@ terraform {
       source  = "hashicorp/google-beta"
       version = ">= 4.41.0"
     }
+    helm = {
+      source = "hashicorp/helm"
+      version = ">=2.11.0"
   }
 
-  required_version = ">= 1.3.0"
+  kubernetes = {
+      source = "hashicorp/kubernetes"
+      version = ">=2.23.0"
+    }
 
+    http = {
+      source = "hashicorp/http"
+      version = ">=3.4.0"
+    }
+  }
+  required_version = ">= 1.3.0"
+  
   backend "gcs" {
-    bucket = "flyte-tf-state"
+    bucket = "flyte-tf-state" #Replace with the GCS Bucket you created for TF State storage
   }
 }

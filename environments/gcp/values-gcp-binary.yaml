@@ -1,18 +1,26 @@
-
+#Use this section to configure the parameters for your environment
+userSettings:
+  googleProjectId: <PROJECT-ID>
+  dbHost: <CloudSQL-IP>
+  dbPassword: <DBPASSWORD>
+  bucketName: <GCS_BUCKET_NAME>
+  hostName: <HOSTNAME>
+  IAMWorkerRole: <GCP-WORKER-SERVICE-ACCOUNT>
+  IAMBackendRole: <GCP-BINARY-SERVICE-ACCOUNT>
 
 configuration:
   database:
     username: flyte
-    password: "3LPHFjl5Kzbab2TVeYuJhpcFkLYhr9N7"
-    host: 10.220.0.3
+    password: "{{ .Values.userSettings.dbPassword }}"
+    host:  "{{ .Values.userSettings.dbHost }}"
     dbname: flyte
   storage:
-    metadataContainer: "flyte-terraform2-data"
-    userDataContainer: "flyte-terraform2-user-data"
+    metadataContainer: "{{ .Values.userSettings.bucketName}}" # It is possible to use different buckets
+    userDataContainer: "{{ .Values.userSettings.bucketName}}"
     provider: gcs
     providerConfig:
       gcs:
-        project: flyte-terraform1
+        project: "{{ .Values.userSettings.googleProjectId }}"
   logging:
     level: 5
     plugins:
@@ -23,15 +31,15 @@ configuration:
   inline:
     cluster_resources:
       customData:
-      - production:
+      - production: # you can set different IAM roles for each project-domain namespace
         - defaultIamRole:
-            value: "flyte-terraform2-flyte-workerr@flyte-terraform1.iam.gserviceaccount.com"
+            value: "{{ .Values.userSettings.IAMWorkerRole}}@{{ .Values.userSettings.googleProjectId}}.iam.gserviceaccount.com"
       - staging:
         - defaultIamRole:
-            value: "flyte-terraform2-flyte-worker@flyte-terraform1.iam.gserviceaccount.com"
+            value: "{{ .Values.userSettings.IAMWorkerRole}}@{{ .Values.userSettings.googleProjectId}}.iam.gserviceaccount.com"
       - development:
         - defaultIamRole:
-            value: "flyte-terraform2-flyte-worker@flyte-terraform1.iam.gserviceaccount.com"
+            value: "{{ .Values.userSettings.IAMWorkerRole}}@{{ .Values.userSettings.googleProjectId}}.iam.gserviceaccount.com"
     task_resources:
       defaults:
         cpu: 1
@@ -57,12 +65,12 @@ clusterResourceTemplates:
         namespace: '{{ namespace }}'
         annotations:
           iam.gke.io/gcp-service-account: '{{ defaultIamRole }}'
-deployment:
-  resources:
-    limits:
-      memory: 1Gi
-    requests:
-      cpu: 1
+#deployment:
+#  resources:
+#    limits:
+#      memory: 1Gi
+#    requests:
+#      cpu: 1
 rbac:
   extraRules:
   - apiGroups:
@@ -78,25 +86,23 @@ rbac:
 serviceAccount:
   create: true
   annotations:
-    iam.gke.io/gcp-service-account: flyte-terraform2-flyte-binary@flyte-terraform1.iam.gserviceaccount.com
+    iam.gke.io/gcp-service-account: "{{ .Values.userSettings.IAMBackendRole}}@{{ .Values.userSettings.googleProjectId}}.iam.gserviceaccount.com"
 
 ingress:
    create: true
-   host: flyte-the-hard-way.gcp.run
+   host: "{{ .Values.userSettings.hostName}}"
    tls:
      - hosts: 
-       - flyte-the-hard-way.gcp.run
-       secretName: flyte-the-hard-way.gcp.run
-   annotations:
-     kubernetes.io/ingress.class: nginx
+       - "{{ .Values.userSettings.hostName}}"
+       secretName: flyte-secret-tls
+   commonAnnotations:
+     kubernetes.io/ingress.class: "nginx"
      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-     acme.cert-manager.io/http01-edit-in-place: "true"
-     cert-manager.io/issuer: letsencrypt-production
-# --- separateGrpcIngress puts GRPC routes into a separate ingress if true. Required for certain ingress controllers like nginx.
-     separateGrpcIngress: true
-    # --- Extra Ingress annotations applied only to the GRPC ingress. Only makes sense if `separateGrpcIngress` is enabled.
-     separateGrpcIngressAnnotations:
-       nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+     cert-manager.io/issuer: "letsencrypt-production"
+   httpAnnotations:
+    nginx.ingress.kubernetes.io/app-root: /console
+   grpcAnnotations:
+     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
    
    
   
