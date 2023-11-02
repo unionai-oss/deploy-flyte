@@ -1,33 +1,24 @@
 #Use this section to configure the parameters for your environment. Use the outputs from the Terraform execution.
 userSettings:
-  googleProjectId: <PROJECT-ID> #gcloud projects list
-  dbHost: "<db-host>" #Use "ip_address" from the db-host output 
-  dbPassword: <db-password>
-  bucketName: <gcs_bucket_name>
+  dbHost: <db-host> #Use "ip_address" from the db-host output 
   hostName: <your-flyte-host-name> #Domain name you will use to connect to Flyte
-  IAMWorkerRole: <GCP-WORKER-SERVICE-ACCOUNT>
-  IAMBackendRole: <GCP-BINARY-SERVICE-ACCOUNT>
+  IAMWorkerRole: <GCP-WORKER-SERVICE-ACCOUNT> #Use TF output
+  IAMBackendRole: <GCP-BINARY-SERVICE-ACCOUNT> #use TF output
 
 configuration:
   database:
     username: flyte
-    password: "{{ .Values.userSettings.dbPassword }}"
+    password: <db-password>
     host:  "{{ .Values.userSettings.dbHost }}"
     dbname: flyte
   storage:
-    metadataContainer: "{{ .Values.userSettings.bucketName}}" # It is possible to use different buckets
-    userDataContainer: "{{ .Values.userSettings.bucketName}}"
+    metadataContainer: <gcs_bucket_name> #It is possible to use different buckets
+    userDataContainer: <gcs_bucket_name>
     provider: gcs
     providerConfig:
       gcs:
-        project: "{{ .Values.userSettings.googleProjectId }}"
-  logging:
-    level: 5
-    plugins:
-      stackdriver:
-        enabled: false
-        templateUri: |-
-          https://console.cloud.google.com/logs/viewer?project=osscluster&angularJsUrl=%2Flogs%2Fviewer%3Fproject%3Dosscluster&resource=k8s_container&advancedFilter=resource.labels.pod_name%3D{{ .podName }}
+        project: <PROJECT-ID> #gcloud projects list
+  
   inline:
     cluster_resources:
       customData:
@@ -65,12 +56,6 @@ clusterResourceTemplates:
         namespace: '{{ namespace }}'
         annotations:
           iam.gke.io/gcp-service-account: '{{ defaultIamRole }}'
-#deployment:
-#  resources:
-#    limits:
-#      memory: 1Gi
-#    requests:
-#      cpu: 1
 rbac:
   extraRules:
   - apiGroups:
