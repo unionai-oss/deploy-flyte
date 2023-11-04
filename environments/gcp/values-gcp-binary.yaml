@@ -1,5 +1,6 @@
 #Use this section to configure the parameters for your environment. Use the outputs from the Terraform execution.
 userSettings:
+  googleProjectId: <your-GCP-project-ID>
   dbHost: <db-host> #Use "ip_address" from the db-host output 
   hostName: <your-flyte-host-name> #Domain name you will use to connect to Flyte
   IAMWorkerRole: <GCP-WORKER-SERVICE-ACCOUNT> #Use TF output

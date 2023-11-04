@@ -74,12 +74,16 @@ terraform output db-password
 | Key      | Value |
 | ----------- | ----------- |
 | userSettings.dbHost      | `db-host` Terraform output       |
+|userSettings.googleProjectID | Your GCP project ID|
 | userSettings.hostname   | The FQDN you will use to connect to Flyte        |
 |userSettings.IAMWorkerRole |`gcp-worker-service-account` Terraform output |
 |userSettings.IAMBackendRole|`gcp-binary-service-account` Terraform output|
 |configuration.database.password |`db-password` Terraform output |
 |configuration.storage.metadataContainer |`gcs_bucket_name` Terraform output |
 |configuration.storage.userDataContainer | `gcs_bucket_name` Terraform output|
+|configuration.storage.providerConfig.project|Your GCP project ID*|
+
+> NOTE: a current limitation in the `flyte-binary` chart, creates this need to use the GCP project ID in two different ways in the values file.
 
 4. Save your changes and run:
 ```bash
