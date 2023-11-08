@@ -3,7 +3,7 @@ locals {
   environment            = "terraform"
   name_prefix            = "${local.application}-${local.environment}"
   region                 = data.google_client_config.current.region
-  project_id             = data.google_project.current.project_id
+  project_id             = "<my-GCP-project>" #Insert your GCP Project ID
   workload_identity_pool = "${local.project_id}"
   flyte_projects         = ["flytesnacks"]
   flyte_domains          = ["development", "staging", "production"]

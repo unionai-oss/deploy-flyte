@@ -9,7 +9,7 @@ module "gke" {
   project_id               = local.project_id
   region                   = local.region
   name                     = local.name_prefix
-  regional                 = false
+  regional                 = true
   release_channel          = "STABLE"
   network                  = module.network.network_name
   subnetwork               = local.gke_subnetwork
@@ -26,9 +26,8 @@ module "gke" {
       max_count    = 3
     }
   ]
+  depends_on = [google_project_service.project ]
 }
-
-
 output "gke-cluster-name" {
   value = module.gke.name
   
