@@ -7,24 +7,29 @@ Prerequisites:
 Procedure:
 
 1. Create a project on GCP
+
 2. Run ``gcloud auth application-default login``
 3. Confirm the ID of your project:
     ```bash
     gcloud projects list
     ```
+4. Create a bucket in the project and region where you will deploy FLyte, leaving public access off. Then, go to `locals.tf`and change the following variable to your new bucket name:
 
-3 . Set the default project
-
-```bash
-gcloud config set project <YOUR_PROJECT_ID>
+```json
+tfstate_bucket = "my-tfstate-bucket"
 ```
 
-4. Set the default region
-    - ``gcloud config set compute/region <your-GCP-region> ``
-    - [Learn more](https://cloud.google.com/compute/docs/gcloud-compute)
-5.  Enable necessary APIs:
-    - ``gcloud services enable servicenetworking.googleapis.com container.googleapis.com compute.googleapis.com``
-6. Create a bucket in the project and in the same region, leaving public access off. Then, go to `terraform.tf`and change the `bucket` for the backend.
+5.  While on `locals.tf`, set the following variable to your project ID:
+
+```json
+project_id = "my-GCP-project" 
+```
+
+6. Set the default GCP region:
+
+```json
+default_region = "my-GCP-region"
+``` 
 7. Initialize your Terraform environment:
 ```bash
 terraform init

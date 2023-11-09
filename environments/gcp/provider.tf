@@ -1,11 +1,11 @@
 provider "google" {
-  project = "flyte-terraform1-403721" #Replace with your project name
-  region  = "us-east1"
+  project = local.project_id #Replace with your project name
+  region  = local.default_region
 }
 
 provider "google-beta" {
-  project = "flyte-terraform1-403721" #Replace with your project name
-  region  = "us-east1"
+  project = local.project_id #Replace with your project name
+  region  = local.default_region
 }
 
 provider "kubernetes" {

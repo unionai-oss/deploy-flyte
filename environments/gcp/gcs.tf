@@ -1,4 +1,5 @@
 module "flyte_data" {
+  #Learn more about the role of Metadata in Flyte: # https://docs.flyte.org/en/latest/concepts/data_management.html#types-of-data
   source = "terraform-google-modules/cloud-storage/google"
 
   project_id      = local.project_id
@@ -22,6 +23,7 @@ resource "google_storage_bucket_iam_binding" "flyte_data_bucket_reader" {
 }
 
 module "flyte_user_data" {
+  # This module sets up a GCS bucket for Raw data. Learn more: https://docs.flyte.org/en/latest/concepts/data_management.html#types-of-data
   source = "terraform-google-modules/cloud-storage/google"
 
   project_id      = local.project_id

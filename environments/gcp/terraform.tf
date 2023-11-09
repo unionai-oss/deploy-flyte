@@ -32,6 +32,6 @@ terraform {
   required_version = ">= 1.3.0"
   
   backend "gcs" {
-    bucket = "flyte-tf-state" #Replace with the GCS Bucket you created for TF State storage
+    bucket = local.tfstate_bucket 
   }
 }
