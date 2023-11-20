@@ -50,19 +50,3 @@ module "flyte-db" {
     require_ssl         = null
   }
 }
-
-
-
-
-
-output "db-host" {
-  value = module.flyte-db.instance_ip_address
-
-}
-
-
-output db-password {
-  value = module.flyte-db.additional_users
-  sensitive = true
-
-}

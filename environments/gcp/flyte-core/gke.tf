@@ -16,6 +16,7 @@ module "gke" {
   ip_range_pods            = local.gke_pods_range_name
   ip_range_services        = local.gke_services_range_name
   create_service_account   = true
+  identity_namespace       = "enabled"
   remove_default_node_pool = true
 
   node_pools = [
@@ -29,8 +30,4 @@ module "gke" {
     }
   ]
   depends_on = [google_project_service.project ]
-}
-output "gke-cluster-name" {
-  value = module.gke.name
-  
 }

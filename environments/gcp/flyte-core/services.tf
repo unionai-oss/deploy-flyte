@@ -1,8 +1,8 @@
 locals {
   enabled_services = [
     "servicenetworking.googleapis.com", 
-     "container.googleapis.com",
-     "compute.googleapis.com"
+    "container.googleapis.com",
+    "compute.googleapis.com"
   ]
 }
 

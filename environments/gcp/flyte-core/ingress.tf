@@ -1,8 +1,15 @@
+
+resource kubernetes_namespace "nginx-ns" {
+  metadata {
+  name = "nginx-ingress"
+  }
+depends_on = [ module.gke ]
+}
+
 module "nginx-controller" {
   source  = "terraform-iaac/nginx-controller/helm"
   version = "2.3.0"
-  namespace = "kube-system"
-depends_on = [ module.gke ]
+  namespace = "nginx-ingress"
 }
 
 data "http" "manifestfile" {
@@ -23,19 +30,6 @@ resource kubectl_manifest "cert-manager-crds" {
 depends_on = [ module.gke ]
 }
 
-resource kubernetes_namespace "cert-manager-ns" {
-  metadata {
-  name = "cert-manager"
-  }
-depends_on = [ module.gke ]
-}
-
-resource kubernetes_namespace "flyte-ns" {
-  metadata {
-  name = "flyte"
-  }
-depends_on = [ module.gke ]
-}
 
 resource kubernetes_secret "flyte-tls-secret" {
   metadata {
@@ -48,10 +42,12 @@ resource kubernetes_secret "flyte-tls-secret" {
 resource helm_release "cert-manager" {
   name = "cert-manager"
   namespace = "cert-manager"
+  create_namespace = true
   repository = "https://charts.jetstack.io"
   chart = "cert-manager"
   version = "v1.13.2"
-depends_on = [ resource.kubernetes_namespace.cert-manager-ns ]
+  depends_on = [ kubectl_manifest.cert-manager-crds ]
+
 }
 
 
@@ -74,4 +70,7 @@ spec:
           ingressClassName: nginx
     YAML
      )
+     depends_on = [ kubectl_manifest.cert-manager-crds ]
 }
+
+
