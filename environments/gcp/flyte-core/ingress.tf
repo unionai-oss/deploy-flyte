@@ -1,3 +1,9 @@
+resource kubernetes_namespace "flyte-ns" {
+  metadata {
+  name = "flyte"
+  }
+depends_on = [ module.gke ]
+}
 
 resource kubernetes_namespace "nginx-ns" {
   metadata {
