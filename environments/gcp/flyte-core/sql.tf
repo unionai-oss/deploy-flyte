@@ -1,17 +1,3 @@
-#--- This section creates part of the network requirements to enable Flyte to connect to the PostgreSQL DB using Private Services Access
-
-
-#module "private_service_connect" {
- # source                     = "terraform-google-modules/network/google//modules/private-service-connect"
-
-#  project_id                 = local.project_id 
- # network_self_link          = module.network.network_self_link
-  #private_service_connect_ip = "172.24.0.5"
-  #forwarding_rule_target     = "all-apis"
-#}
-
-#-----------------------------------------
-
 module "flyte-db" {
   source               = "GoogleCloudPlatform/sql-db/google//modules/postgresql"
   name                 = "${local.name_prefix}-db"
