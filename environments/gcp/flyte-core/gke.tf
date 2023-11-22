@@ -31,3 +31,8 @@ module "gke" {
   ]
   depends_on = [google_project_service.project ]
 }
+
+output gke_cluster_name {
+  value = module.gke.name
+
+}

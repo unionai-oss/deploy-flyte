@@ -8,8 +8,6 @@ The instructions and files in this repo, are designed to help you prepare your c
 2. [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli#install-terraform) 1.4.6+
 
 ## Tutorials
-
-
 * ### [Flyte on AWS](environments/aws/flyte-binary/README.md)
 * ### [Flyte on GCP](environments/gcp/flyte-core/README.md) 
 

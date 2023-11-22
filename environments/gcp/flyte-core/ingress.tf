@@ -38,10 +38,11 @@ depends_on = [ module.gke ]
 
 
 resource kubernetes_secret "flyte-tls-secret" {
+  depends_on = [ kubernetes_namespace.flyte-ns ]
   metadata {
    name = "flyte-secret-tls"
    namespace = "flyte"
-
+  
   }
 
 }
@@ -67,7 +68,7 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: noreply@flyte.org
+    email: ${local.email}
     privateKeySecretRef:
       name: letsencrypt-production
     solvers:
@@ -76,7 +77,7 @@ spec:
           ingressClassName: nginx
     YAML
      )
-     depends_on = [ kubectl_manifest.cert-manager-crds ]
+     depends_on = [ helm_release.cert-manager ]
 }
 
 

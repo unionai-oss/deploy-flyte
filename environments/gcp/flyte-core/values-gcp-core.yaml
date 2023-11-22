@@ -31,10 +31,6 @@ flyteadmin:
       cpu: 50m
       ephemeral-storage: 200Mi
       memory: 200Mi
-  service:
-    annotations:
-      # Required for the ingress to properly route grpc traffic to grpc port
-      cloud.google.com/app-protocols: '{"grpc":"HTTP2"}'
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -66,10 +62,6 @@ datacatalog:
       cpu: 50m
       ephemeral-storage: 2Gi
       memory: 200Mi
-  service:
-    annotations:
-      # Required for the ingress to properly route grpc traffic to grpc port
-      cloud.google.com/app-protocols: '{"grpc":"HTTP2"}'
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -159,6 +151,7 @@ common:
       secretName: flyte-secret-tls
     annotations:
       kubernetes.io/ingress.class: nginx
+      ingress.kubernetes.io/rewrite-target: /
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
       cert-manager.io/issuer: "letsencrypt-production"
       acme.cert-manager.io/http01-edit-in-place: "true"

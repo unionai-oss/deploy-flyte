@@ -3,25 +3,28 @@
 Prerequisites:
 
 - [terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli#install-terraform)
+- [gcloud CLI](https://cloud.google.com/sdk/docs/install)
 
 Procedure:
 
-1. Create a project on GCP and get its PROJECT_ID:
+1. Create a project on GCP and get its `PROJECT_ID`:
 
     ```bash
     gcloud projects list
     ```
 >NOTE: learn how to setup the gcloud CLI [here](https://cloud.google.com/sdk/docs/initializing#initialize_the)
 
-2. Acquire credentials to access the new project:
+2. Take note of the `PROJECT_NUMBER`
+
+3. Acquire credentials to access the new project:
 
 ```bash
 gcloud auth application-default login
 ```
 
-3. Create a bucket in the project and region where you will deploy Flyte, leaving public access off. 
+4. Create a bucket in the project and region where you will deploy Flyte, leaving public access off. 
 
-4. Go to `locals.tf` and change the following variables to your environment specifics:
+5. Go to `locals.tf` and change the following variables to your environment specifics:
 
 | Key      | Value |Notes |
 | ----------- | ----------- |-----|
@@ -30,9 +33,11 @@ gcloud auth application-default login
 | `project_id` | your GPC project ID |
 `dns-domain` | A DNS domain you own, so SSL certificates can be generated|
 |`region` | The GCP region you'll use |
+|`email` | Set the email where Let's Encrypt will contact you about expiring certificates||
+|`project_number` | Unique per GCP project, used to form a unique name for GCS buckets |
 
-5. Save your changes.
-6. Go to `terraform.tf` and replace the name of the GCS bucket you created in step 2 in the appropiate section:
+6. Save your changes.
+7. Go to `terraform.tf` and replace the name of the GCS bucket you created in step 2 in the appropiate section:
 
 ```json
 ...
@@ -41,23 +46,26 @@ backend "gcs" {
   }
 ```
 
-7. Initialize your Terraform environment:
+8. Initialize your Terraform environment:
 ```bash
 terraform init
 ```
-8. Then:
+9. Then:
 
 ```bash
 terraform plan
 ```
-9. Verify changes to be applied and run:
+10. Verify changes to be applied and run:
 ```bash
 terraform apply
 ```
 Example output:
 ```bash
+Apply complete! Resources: 57 added, 0 changed, 0 destroyed.
+Outputs:
 
-
+gke_cluster_name = "flyte-gcp"
+```
 **Once everything is installed**:
 
 1. Generate the `kubeconfig` entry for your new GKE cluster:
@@ -84,12 +92,13 @@ flyte-core-grpc   <none>   flyteontf.uniondemo.run   35.237.42.230   80, 443   3
 ```yaml
 ...
 #Example
-endpoint: dns://flyteontf.uniondemo.run 
+endpoint: dns:///flyteontf.uniondemo.run 
 ```
 
 > NOTE: this is only needed for CLI access (`flytectl` or `pyflyte`)
 
 ### Testing your deployment
 
-
 5. In your browser, go to `https://<your-DNS-record>/console`
+
+> WARNING: At this point, Flyte's UI would be exposed to the Internet. We stronly encourage you to add authentication to your deployment by following [the documentation](https://docs.flyte.org/en/latest/deployment/configuration/auth_setup.html)
