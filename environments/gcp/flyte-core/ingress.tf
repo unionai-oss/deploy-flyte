@@ -33,8 +33,9 @@ data kubectl_file_documents "cert-manager-manifest" {
 resource kubectl_manifest "cert-manager-crds" {
  for_each = data.kubectl_file_documents.cert-manager-manifest.manifests
  yaml_body = each.value
-depends_on = [ module.gke ]
+depends_on = [ module.nginx-controller ]
 }
+
 
 
 resource kubernetes_secret "flyte-tls-secret" {

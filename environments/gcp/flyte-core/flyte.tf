@@ -4,7 +4,10 @@ locals {
 
 #Installs the flyte-core Helm chart in the flyte namespace using the outputs of Terraform modules
 resource "helm_release" "flyte-core" {
-  depends_on       = [kubectl_manifest.cert-manager-issuer]
+  depends_on       = [
+                      kubectl_manifest.cert-manager-issuer,
+                      module.nginx-controller
+                      ]
   name             = "flyte-core"
   namespace        = "flyte"
   repository       = "https://flyteorg.github.io/flyte"

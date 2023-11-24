@@ -32,6 +32,6 @@ terraform {
   required_version = ">= 1.3.0"
   
   backend "gcs" {
-    bucket = "<your-TF-state-bucket>" #Replace with the name of the GCS bucket you'll use to store TF state
+    bucket = "<your-GCS-bucket-for-TF-state>" #Replace with the name of the GCS bucket you'll use to store TF state
   }
 }
