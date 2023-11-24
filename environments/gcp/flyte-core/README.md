@@ -88,11 +88,22 @@ flyte-core        <none>   flyteontf.uniondemo.run   35.237.42.230   80, 443   3
 flyte-core-grpc   <none>   flyteontf.uniondemo.run   35.237.42.230   80, 443   3m1s
 ```
 3. Create a DNS `A` record in a zone you own, pointing to the Ingress IP.
+
+>NOTE: it may take a while before `cert-manager` can issue a certificate for your deployment, especially because for that process to work,
+the FQDN of your deployment needs to be resolvable and DNS propagation takes time. 
+
 4. Update your `$HOME\.flyte\config,yaml` and make `endpoint` your DNS name:
 ```yaml
 ...
 #Example
 endpoint: dns:///flyteontf.uniondemo.run 
+insecure: false #it means, the connection uses SSL, even if it's a temporary cert-manager cert.
+
+#Uncomment only if you want to test CLI commands and the certificate is not generated yet.
+# You can confirm the cert by either going to the UI (a valid certificate should be used) or
+#from your terminal: kubectl get challenges.acme.cert-manager.io -n flyte (there should not be any pending challenge)
+
+#insecureSkipVerify: true 
 ```
 
 > NOTE: this is only needed for CLI access (`flytectl` or `pyflyte`)
