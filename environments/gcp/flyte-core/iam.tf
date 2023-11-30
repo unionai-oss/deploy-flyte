@@ -75,7 +75,7 @@ resource "google_project_iam_custom_role" "custom_IAM_roles" {
       "storage.objects.delete",
       "storage.objects.get",
       "storage.objects.list",
-      "storage.objects.update",
+      "storage.objects.update"
     ],
   }
   role_id = each.key
@@ -118,6 +118,15 @@ resource "google_project_iam_binding" "flyteworkers-binding" {
   
 }
 
+#This particular binding enables the necessary permissions to build and push images to an Artifact Registry.
+#Feel free to remove it if you plan on using a different container registry.
+resource "google_project_iam_binding" "flyteworkers-binding-registry" {
+  project = local.project_id
+  role = "roles/artifactregistry.writer"
+  members = ["serviceAccount:${google_service_account.flyteworkers-gsa.email}"]
+  
+}
+
 # Step 4 Bind GSAs with KSAs as Workload Identity Users, enabling impersonation
 resource google_service_account_iam_binding "flyteadmin-workload-identity-binding" {
    role               = "roles/iam.workloadIdentityUser"
@@ -146,8 +155,6 @@ resource google_service_account_iam_binding "datacatalog-workload-identity-bindi
    members = ["serviceAccount:${module.gke.identity_namespace}[flyte/datacatalog]"]
 
 }
-
-
 
 locals {
   flyte_worker_wi_members = toset([
