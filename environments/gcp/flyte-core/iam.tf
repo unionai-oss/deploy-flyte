@@ -32,6 +32,13 @@ resource "google_service_account" "flyteworkers-gsa" {
   account_id = "${local.name_prefix}-flyteworkers"
 }
 
+#GSA to be used to push container images to Artifact Registry. 
+#https://cloud.google.com/artifact-registry/docs/docker/authentication#token
+resource "google_service_account" "artifactregistry-writer" {
+  account_id = "${local.name_prefix}-registrywriter" 
+}
+
+
 #2. Create custom roles
 resource "google_project_iam_custom_role" "custom_IAM_roles" {
 
@@ -118,13 +125,22 @@ resource "google_project_iam_binding" "flyteworkers-binding" {
   
 }
 
-#This particular binding enables the necessary permissions to build and push images to an Artifact Registry.
+#This particular binding enables the necessary permissions for the Flyte Pods to 
+#pull images from Artifact Registry.
 #Feel free to remove it if you plan on using a different container registry.
 resource "google_project_iam_binding" "flyteworkers-binding-registry" {
   project = local.project_id
+  role = "roles/artifactregistry.reader"
+  members = ["serviceAccount:${google_service_account.flyteworkers-gsa.email}"] 
+}
+
+#This permission is granted so the end user/CI can obtain an access token to push container images to AR. 
+#See https://cloud.google.com/artifact-registry/docs/docker/authentication#token
+resource "google_project_iam_binding" "artifactregistry-writer"{
+  project = local.project_id
   role = "roles/artifactregistry.writer"
-  members = ["serviceAccount:${google_service_account.flyteworkers-gsa.email}"]
-  
+  members = ["serviceAccount:${google_service_account.artifactregistry-writer.email}"] 
+
 }
 
 # Step 4 Bind GSAs with KSAs as Workload Identity Users, enabling impersonation
