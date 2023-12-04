@@ -40,10 +40,11 @@ gcloud auth application-default login
 7. Go to `terraform.tf` and replace the name of the GCS bucket you created in step 2 in the appropiate section:
 
 ```json
-...
+
 backend "gcs" {
-    bucket = <your-GCS-state-bucket> 
+   bucket = <your-GCS-state-bucket> 
   }
+
 ```
 
 8. Initialize your Terraform environment:
@@ -101,7 +102,7 @@ insecure: false #it means, the connection uses SSL, even if it's a temporary cer
 
 #Uncomment only if you want to test CLI commands and the certificate is not generated yet.
 # You can confirm the cert by either going to the UI (a valid certificate should be used) or
-#from your terminal: kubectl get challenges.acme.cert-manager.io -n flyte (there should not be any pending challenge)
+#from your terminal: kubectl get challenges.acme.cert-manager.io -n flyte (there should not be any pending challenge). With this flag enabled, SSL is still used but the client doesn't verify the certificate chain.
 
 #insecureSkipVerify: true 
 ```
