@@ -225,15 +225,15 @@ configmap:
     server:
       httpPort: 8088
       grpcPort: 8089
-      security:
-        secure: false
-        useAuth: false
-        allowCors: true
-        allowedOrigins:
+    security:
+      secure: false
+      useAuth: false
+      allowCors: true
+      allowedOrigins:
           # Accepting all domains for Sandbox installation
-          - "*"
-        allowedHeaders:
-          - "Content-Type"
+        - "*"
+      allowedHeaders:
+        - "Content-Type"
    
   task_resource_defaults:
     task_resources:
