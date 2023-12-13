@@ -118,6 +118,7 @@ insecure: false #it means, the connection uses SSL, even if it's a temporary cer
 
 ### How to connect to Artifact Registry?
 
+>NOTE: Read more about authentication to Artifact Registry using Access Tokens [here](https://cloud.google.com/artifact-registry/docs/docker/authentication#token)
 1. Create a key for the Google Service Account you'll be impersonating in order to push Images to Artifact Registry:
 
 >NOTE: in this example we're using `flyte` as the value for `local.application` and `gcp` for `local.environment` . Replace to match what you indicated in the `locals.tf` file
