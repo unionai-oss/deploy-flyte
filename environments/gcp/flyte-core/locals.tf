@@ -5,7 +5,7 @@ locals {
   environment            = "gcp" #Change to match your needs
   project_id             = "kpro-staging"
   project_number         = "42577133707"
-  dns-domain             = "flyte.khiladipro.com" #Change to your domain name 
+  dns-domain             = "khiladipro.com" #Change to your domain name 
   region                 = "asia-south1" #Change to your GCP region
   
   #You must replace this email address with your own.
