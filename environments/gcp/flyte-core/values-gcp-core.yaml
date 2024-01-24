@@ -296,7 +296,7 @@ configmap:
 
       authorizedUris:
         # Use the public URL of flyteadmin (a DNS record pointing to your Ingress resource)
-        - https://flyte.khiladipro.in
+        - https://flyte.staging.khiladipro.in
         - http://flyteadmin:80
         - http://flyteadmin.flyte.svc.cluster.local:80
       userAuth:
