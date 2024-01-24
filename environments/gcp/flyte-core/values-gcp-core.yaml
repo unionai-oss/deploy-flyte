@@ -302,7 +302,7 @@ configmap:
       userAuth:
         openId:
           baseUrl: https://accounts.google.com
-          clientId: 151964844764-kcf7pv825e43p3dfpsrhntrocj6r54eq.apps.googleusercontent.com
+          clientId: 42577133707-pc9tbj7s443f07svdlis8q1e34dvk5v4.apps.googleusercontent.com
           scopes:
             - profile
             - openid
