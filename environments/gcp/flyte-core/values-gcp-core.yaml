@@ -227,14 +227,86 @@ configmap:
       grpcPort: 8089
     security:
       secure: false
-      useAuth: false
+      useAuth: true
       allowCors: true
       allowedOrigins:
-          # Accepting all domains for Sandbox installation
+        # Accepting all domains for Sandbox installation
         - "*"
       allowedHeaders:
         - "Content-Type"
-   
+    auth:
+      appAuth:
+        thirdPartyConfig:
+          flyteClient:
+            clientId: flytectl
+            redirectUri: http://localhost:53593/callback
+            scopes:
+              - offline
+              - all
+        selfAuthServer:
+          staticClients:
+            flyte-cli:
+              id: flyte-cli
+              redirect_uris:
+                - http://localhost:53593/callback
+                - http://localhost:12345/callback
+              grant_types:
+                - refresh_token
+                - authorization_code
+              response_types:
+                - code
+                - token
+              scopes:
+                - all
+                - offline
+                - access_token
+              public: true
+            flytectl:
+              id: flytectl
+              redirect_uris:
+                - http://localhost:53593/callback
+                - http://localhost:12345/callback
+              grant_types:
+                - refresh_token
+                - authorization_code
+              response_types:
+                - code
+                - token
+              scopes:
+                - all
+                - offline
+                - access_token
+              public: true
+            flytepropeller:
+              id: flytepropeller
+              # The bcrypt hash generated for your random password: see gen-pw-hash.py
+              client_secret: JDJiJDA2JG9XWkhPZGl4dUh3eEVjcUNpb0diLy5qTHptdXNyb2l5VU5GV2pOOTcuRnMxM1kzaE9aVEIy
+              redirect_uris:
+                - http://localhost:3846/callback
+              grant_types:
+                - refresh_token
+                - client_credentials
+              response_types:
+                - token
+              scopes:
+                - all
+                - offline
+                - access_token
+              public: false
+
+      authorizedUris:
+        # Use the public URL of flyteadmin (a DNS record pointing to your Ingress resource)
+        - https://flyte.khiladipro.in
+        - http://flyteadmin:80
+        - http://flyteadmin.flyte.svc.cluster.local:80
+      userAuth:
+        openId:
+          baseUrl: https://accounts.google.com
+          clientId: 151964844764-kcf7pv825e43p3dfpsrhntrocj6r54eq.apps.googleusercontent.com
+          scopes:
+            - profile
+            - openid
+
   task_resource_defaults:
     task_resources:
       defaults:
@@ -250,7 +322,7 @@ configmap:
       region:
       scheme: "gcs"
       signedUrls:
-        durationMinutes: 3 
+        durationMinutes: 3
 
   core:
     propeller:
@@ -284,7 +356,6 @@ configmap:
           sidecar: sidecar
           container_array: k8s-array
 
-
   # -- Section that configures how the Task logs are displayed on the UI. This has to be changed based on your actual logging provider.
   # Refer to [structure](https://pkg.go.dev/github.com/lyft/flyteplugins/go/tasks/logs#LogConfig) to understand how to configure various
   # logging engines
@@ -300,6 +371,15 @@ configmap:
           config:
             stackdriver-enabled: true
             stackdriver-logresourcename: k8s_container
+
+secrets:
+  adminOauthClientCredentials:
+    # If enabled is true, helm will create and manage `flyte-secret-auth` and populate it with `clientSecret`
+    # If enabled is false, it's up to the user to create `flyte-secret-auth`
+    enabled: true
+    # Use the non-encoded version of the random password
+    clientSecret: udaanpro379
+    clientId: flytepropeller
 
 # ----------------------------------------------------------------
 # Optional Modules
