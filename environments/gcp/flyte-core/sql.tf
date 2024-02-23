@@ -12,7 +12,7 @@ module "flyte-db" {
   
   additional_databases = [
     {
-      name      = "flyte"
+      name      = "flyteadmin"
       charset   = ""
       collation = ""
     }
@@ -20,7 +20,7 @@ module "flyte-db" {
 
   additional_users = [
     {
-      name            = "flyte"
+      name            = "flyteadmin"
       password        = ""
       random_password = true
     }
