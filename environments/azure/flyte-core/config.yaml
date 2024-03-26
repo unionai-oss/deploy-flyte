@@ -1,0 +1,7 @@
+admin:
+  endpoint: dns:///unionai-flyte-playground.westus2.cloudapp.azure.com
+  authType: Pkce
+  insecure: false
+logger:
+  show-source: true
+  level: 0
