@@ -1,10 +1,14 @@
 # Prerequisites
-- terraform installed locally (version 1.3.7)
-- azure cli installed (`brew update && brew install azure-cli`)
-- helm installed
-- having an User in our Microsoft Tenant with at least Contributor access on the unionai-playground Subscription
-- log into Azure via `az login`
-- Create a azure resource group & storage account & storage container for the terraform state
+
+- [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli#install-terraform) (version 1.3.7)
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli#install)
+- [Helm](https://helm.sh/docs/intro/install/#through-package-managers)
+- Your Microsoft account should have access to an Azure subscription with at least Contributor.
+- Log into Azure via `az login`
+- Once logged in, create a new:
+    - Resource Group
+    - Storage account with default settings
+    - Storage container for the terraform state
 - Put these values into [backend.tfvars](./backend.tfvars)
 
 
