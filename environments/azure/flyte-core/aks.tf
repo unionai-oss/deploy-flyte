@@ -19,6 +19,6 @@ resource "azurerm_kubernetes_cluster" "flyte" {
   }
 
   lifecycle {
-    ignore_changes = ["default_node_pool"]
+    ignore_changes = [default_node_pool]
   }
 }
