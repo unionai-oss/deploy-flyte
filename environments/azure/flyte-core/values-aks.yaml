@@ -1,6 +1,4 @@
 userSettings:
-
-  certificateArn: <CERTIFICATE_ARN>
   dbPassword: ${cosmos_postgres_password}
   dbUser: ${cosmos_postgres_user}
   dbName: ${cosmos_postgres_database_name}
@@ -9,10 +7,7 @@ userSettings:
   storageAccountName: ${storage_account_name}
   storageAccountKey: ${storage_account_key}
   dnsLabel: ${dns_label}
-  logGroup: <LOG_GROUP_NAME>
-  redisHostUrl: <REDIS_HOST_URL>
-  redisHostKey: <REDIS_HOST_KEY>
-
+ 
 #
 # FLYTEADMIN
 #
