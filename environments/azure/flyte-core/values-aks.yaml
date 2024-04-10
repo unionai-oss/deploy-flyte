@@ -1,12 +1,11 @@
 userSettings:
-  accountNumber: <ACCOUNT_NUMBER>
-  accountRegion: <AWS_REGION>
+
   certificateArn: <CERTIFICATE_ARN>
   dbPassword: ${cosmos_postgres_password}
   dbUser: ${cosmos_postgres_user}
   dbName: ${cosmos_postgres_database_name}
   dbHost: ${cosmos_postgres_database_host}
-  containerName: ${storage_account_container_name}
+  storageContainerName: ${storage_account_container_name}
   storageAccountName: ${storage_account_name}
   storageAccountKey: ${storage_account_key}
   dnsLabel: ${dns_label}
@@ -25,8 +24,8 @@ flyteadmin:
     # -- If the service account is created by you, make this false, else a new service account will be created and the iam-role-flyte will be added
     # you can change the name of this role
     create: true
-    annotations:
-      eks.amazonaws.com/role-arn: arn:aws:iam::{{ .Values.userSettings.accountNumber }}:role/iam-role-flyte
+    annotations: {}
+   #TBD. See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
 
   resources:
     limits:
@@ -58,8 +57,8 @@ datacatalog:
   serviceAccount:
     # -- If the service account is created by you, make this false
     create: true
-    annotations:
-      eks.amazonaws.com/role-arn: arn:aws:iam::{{ .Values.userSettings.accountNumber }}:role/iam-role-flyte
+    annotations: {}
+ #TBD. See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations        
   resources:
     limits:
       cpu: 1
@@ -87,7 +86,7 @@ flytepropeller:
     # -- If the service account is created by you, make this false
     create: true
     annotations:
-      eks.amazonaws.com/role-arn: arn:aws:iam::{{ .Values.userSettings.accountNumber }}:role/iam-role-flyte
+#TBD. See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
   resources:
     limits:
       cpu: 1
@@ -176,21 +175,21 @@ common:
 
 storage:
   type: custom
-  enableMultiContainer: true
+#  enableMultiContainer: true
   limits:
-    maxDownloadMBs: 500000
+    maxDownloadMBs: 5000
     type: custom
-  bucketName: "{{ .Values.userSettings.containerName }}"
+  bucketName: "{{ .Values.userSettings.storageContainerName }}"
   custom:
-    container: "{{ .Values.userSettings.containerName }}"
-    enable-multicontainer: true
+    container: "{{ .Values.userSettings.storageContainerName }}"
+ #   enable-multicontainer: true
     connection: {}
     type: stow
     stow:
       kind: azure
       config:
         account: "{{ .Values.userSettings.storageAccountName }}"
-        key: "{{ .Values.userSettings.storageAccountKey }}"
+        key: "{{ .Values.userSettings.storageAccountKey }}" #Hopefully we'll switch this to proper IAM
 
 db:
   datacatalog:
@@ -217,13 +216,13 @@ configmap:
   adminServer:
     server:
       httpPort: 8088
-      grpcPort: 8089
+      grpc:
+        port: 8089
       security:
         secure: false
         useAuth: false
         allowCors: true
         allowedOrigins:
-          # Accepting all domains for Sandbox installation
           - "*"
         allowedHeaders:
           - "Content-Type"
@@ -239,7 +238,7 @@ configmap:
 
   core:
     propeller:
-      rawoutput-prefix: "abfs://{{ .Values.userSettings.containerName }}/propeller"
+      rawoutput-prefix: "abfs://{{ .Values.userSettings.StorageContainerName }}/propeller"
       workers: 40
       gc-interval: 12h
       max-workflow-retries: 50
@@ -285,32 +284,17 @@ configmap:
           - container
           - sidecar
           - k8s-array
-        #          - sagemaker_hyperparameter_tuning
-        #          - sagemaker_custom_training
-        #          - sagemaker_training
         default-for-task-types:
           container: container
           sidecar: sidecar
           container_array: k8s-array
-  #          sagemaker_custom_training_task: sagemaker_custom_training
-  #          sagemaker_custom_training_job_task: sagemaker_custom_training
 
 
   # -- Section that configures how the Task logs are displayed on the UI. This has to be changed based on your actual logging provider.
   # Refer to [structure](https://pkg.go.dev/github.com/lyft/flyteplugins/go/tasks/logs#LogConfig) to understand how to configure various
   # logging engines
   task_logs:
-    plugins:
-      logs:
-        kubernetes-enabled: false
-        # -- One option is to enable cloudwatch logging for EKS, update the region and log group accordingly
-        # You can even disable this
-        cloudwatch-enabled: false
-        # -- region where logs are hosted
-        cloudwatch-region: "{{ .Values.userSettings.accountRegion }}"
-        # -- cloudwatch log-group
-        cloudwatch-log-group: "{{ .Values.userSettings.logGroup }}"
-
+    plugins: {}
 # ----------------------------------------------------------------
 # Optional Modules
 # Flyte built extensions that enable various additional features in Flyte.
@@ -330,22 +314,7 @@ workflow_scheduler:
 # various events in their workflows
 workflow_notifications:
   enabled: false
-  config:
-    notifications:
-      type: aws
-      region: "{{ .Values.userSettings.accountRegion }}"
-      publisher:
-        topicName: "arn:aws:sns:{{ .Values.userSettings.accountRegion }}:{{ .Values.userSettings.accountNumber }}:flyte-notifications-topic"
-      processor:
-        queueName: flyte-notifications-queue
-        accountId: "{{ .Values.userSettings.accountNumber }}"
-      emailer:
-        subject: "Flyte: {{ project }}/{{ domain }}/{{ launch_plan.name }} has {{ phase }}"
-        sender: "flyte@example.com"
-        body: |
-         "Execution {{ workflow.project }}/{{ workflow.domain }}/{{ workflow.name }}/{{ name }} has {{ phase }}.
-          Details: https://flyte.example.com/console/projects/{{ project }}/domains/{{ domain }}/executions/{{ name }}.
-          {{ error }}"
+
 
 # -- Configuration for the Cluster resource manager component. This is an optional component, that enables automatic
 # cluster configuration. This is useful to set default quotas, manage namespaces etc that map to a project/domain
@@ -354,20 +323,6 @@ cluster_resource_manager:
   enabled: true
   # -- Starts the cluster resource manager in standalone mode with requisite auth credentials to call flyteadmin service endpoints
   standalone_deploy: false
-  config:
-    cluster_resources:
-      customData:
-        - production:
-            - projectQuotaCpu:
-                value: "5"
-            - projectQuotaMemory:
-                value: "4000Mi"
-        - development:
-            - projectQuotaCpu:
-                value: "4"
-            - projectQuotaMemory:
-                value: "3000Mi"
-
   templates:
     # -- Template for namespaces resources
     - key: aa_namespace
@@ -388,24 +343,3 @@ cluster_resource_manager:
         metadata:
           name: default
           namespace: {{ namespace }}
-
-    - key: ab_project_resource_quota
-      value: |
-        apiVersion: v1
-        kind: ResourceQuota
-        metadata:
-          name: project-quota
-          namespace: {{ namespace }}
-        spec:
-          hard:
-            limits.cpu: {{ projectQuotaCpu }}
-            limits.memory: {{ projectQuotaMemory }}
-
-
-
-#
-# SPARKOPERATOR
-#
-
-sparkoperator:
-  enabled: false

@@ -8,14 +8,37 @@
 - Once logged in, create a new:
     - Resource Group
     - Storage account with default settings
-    - Storage container for the terraform state
+    - Storage container for the Terraform state
 - Put these values into [backend.tfvars](./backend.tfvars)
 
 
 # Create Cluster & Cluster Resources
-- `terraform -chdir=environments/azure/flyte-core init -backend=true -backend-config=backend.tfvars`
-- `terraform -chdir=environments/azure/flyte-core plan -out=out.plan`
-- `terraform -chdir=environments/azure/flyte-core apply out.plan`
+1. Go to the `environments/azure/flyte=core` folder and initialize the Terraform backend:
+
+```bash
+cd environments/azure/flyte-core && terraform init -backend=true -backend-config=backend.tfvars
+```
+2. Generate a Terraform plan:
+
+```bash
+terraform plan -out=flyte.plan
+```
+3. Apply the plan:
+```bash
+terraform apply flyte.plan
+```
+Example output:
+```bash
+Apply complete! Resources: 9 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+cluster_name = "unionai-playground-flyte"
+ip_dns_label = "unionai-flyte-playground"
+resource_group_name = "unionai-playground-flyte"
+```
+
+
 # Get Cluster Config
 - `az aks get-credentials --resource-group unionai-playground-flyte --name unionai-playground-flyte --overwrite-existing`
 - check: `k get pods -n flyte`:
@@ -41,10 +64,10 @@ helm install ingress-nginx ingress-nginx/ingress-nginx \
 --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz
 ```
 ## assign dns label to ingress controller ip
-- `./environments/azure/flyte-core/connect_flyte.sh unionai-playground-flyte unionai-playground-flyte unionai-flyte-playground`
+- `./environments/azure/flyte-core/connect_flyte.sh unionai-playground-flyte unionai-playground-flyte unionai-flyte-playground` (try to make it part of the ingress module)
 ## install cert manager
 
-- `kubectl label namespace ingress cert-manager.io/disable-validation=true`
+- `kubectl label namespace ingress cert-manager.io/disable-validation=true` (make part of the ingress module)
 - `helm repo add jetstack https://charts.jetstack.io`
 - `helm repo update`
 - 
