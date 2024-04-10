@@ -6,7 +6,7 @@ resource "helm_release" "flyte-core" {
   repository       = "https://flyteorg.github.io/flyte"
   chart            = "flyte-core"
   version          = "1.9.0"
-  values = [file("values.yaml"), templatefile("values-aks.yaml", {
+  values = [templatefile("values-aks.yaml", {
     cosmos_postgres_user           = "flyte"
     cosmos_postgres_password       = random_password.postgres.result
     cosmos_postgres_database_name  = azurerm_postgresql_flexible_server_database.flyte.name
