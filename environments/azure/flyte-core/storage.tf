@@ -34,15 +34,15 @@ resource "azurerm_role_assignment" "role_assignment" {
   role_definition_name = each.value
   principal_id         = data.azurerm_client_config.current.object_id
 }
-
+## App registration
 resource "azuread_application" "flyte-app" {
   display_name = "flyte"
   owners       = [data.azuread_client_config.current.object_id]
 }
-## Service principal for Flyte tasks
+# Service Principal for Flyte tasks
 resource "azuread_service_principal" "flyte_sp" {
   client_id                    = azuread_application.flyte-app.client_id
-  app_role_assignment_required = true
+  app_role_assignment_required = false
   owners                       = [data.azuread_client_config.current.object_id]
  # app_roles                    = "Storage Blob Data Owner" 
 }
@@ -50,5 +50,16 @@ resource "azuread_service_principal" "flyte_sp" {
 resource "azurerm_role_assignment" "flyte_sp_role_assignment" {
   scope                = azurerm_storage_account.flyte.id
   role_definition_name = "Storage Blob Data Owner"
-  principal_id         = azuread_service_principal.flyte_sp.id
+  principal_id         = azuread_service_principal.flyte_sp.object_id
+}
+
+resource "time_rotating" "secret_rotation" {
+  rotation_days = 30
+}
+
+resource "azuread_service_principal_password" "flyte_client_secret" {
+  service_principal_id = azuread_service_principal.flyte_sp.object_id
+  rotate_when_changed = {
+    rotation = time_rotating.secret_rotation.id
+  }
 }
