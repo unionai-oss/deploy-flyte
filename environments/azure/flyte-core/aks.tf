@@ -1,3 +1,4 @@
+data "azurerm_subscription" "current" {}
 resource "azurerm_user_assigned_identity" "workload_identity" { 
 
   name = "flyte-workload-identity"
@@ -6,6 +7,11 @@ resource "azurerm_user_assigned_identity" "workload_identity" {
 
 }
 
+resource "azurerm_role_assignment" "workload_identity_role" {
+  scope              = data.azurerm_subscription.current.id
+  role_definition_name = "Contributor"
+  principal_id       = azurerm_user_assigned_identity.workload_identity.principal_id
+}
 resource "azurerm_kubernetes_cluster" "flyte" {
   name                = "${local.tenant}-${local.environment}-flytetf"
   location            = azurerm_resource_group.flyte.location
