@@ -32,6 +32,6 @@ terraform {
   required_version = ">= 1.3.0"
   
   backend "gcs" {
-    bucket = "flyte-storage.khiladipro.com" #Replace with the name of the GCS bucket you'll use to store TF state
+    bucket = "flyte.khiladipro.com" #Replace with the name of the GCS bucket you'll use to store TF state
   }
 }
