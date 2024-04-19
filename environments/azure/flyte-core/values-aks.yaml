@@ -159,23 +159,23 @@ common:
 #
 
 storage:
-  type: custom
+#  type: stow
 #  enableMultiContainer: true
-  limits:
-    maxDownloadMBs: 5000
-    type: custom
-  bucketName: "{{ .Values.userSettings.storageContainerName }}"
-  custom:
-    container: "{{ .Values.userSettings.storageContainerName }}"
+  #limits:
+   # maxDownloadMBs: 5000
+ #   type: custom
+ # bucketName: "{{ .Values.userSettings.storageContainerName }}"
+ # custom:
+ #   container: "{{ .Values.userSettings.storageContainerName }}"
  #   enable-multicontainer: true
-    connection: {}
-    type: stow
-    stow:
-      kind: azure
-      config:
-        account: "{{ .Values.userSettings.storageAccountName }}"
-        key: "{{ .Values.userSettings.storageAccountKey }}" #Hopefully we'll switch this to proper IAM
-
+ #   connection: {}
+  type: stow
+  stow:
+    kind: azure
+    config:
+      account: "{{ .Values.userSettings.storageAccountName }}"
+      #key: "{{ .Values.userSettings.storageAccountKey }}" #Hopefully we'll switch this to proper IAM
+    container: "{{ .Values.userSettings.storageContainerName }}"
 db:
   datacatalog:
     database:
