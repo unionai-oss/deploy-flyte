@@ -7,6 +7,7 @@ userSettings:
   storageAccountName: ${storage_account_name}
   storageAccountKey: ${storage_account_key}
   dnsLabel: ${dns_label}
+  clusterClientId: ${workload_identity_client_id}
  
 #
 # FLYTEADMIN
@@ -19,8 +20,9 @@ flyteadmin:
     # -- If the service account is created by you, make this false, else a new service account will be created and the iam-role-flyte will be added
     # you can change the name of this role
     create: true
-    annotations: {}
-   #TBD. See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
+    annotations: 
+      azure.workload.identity/client-id: {{ .Values.userSettings.clusterClientId }}
+   #See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
 
   resources:
     limits:
@@ -52,8 +54,9 @@ datacatalog:
   serviceAccount:
     # -- If the service account is created by you, make this false
     create: true
-    annotations: {}
- #TBD. See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations        
+    annotations:
+      azure.workload.identity/client-id: {{ .Values.userSettings.clusterClientId }}
+ # See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations        
   resources:
     limits:
       cpu: 1
@@ -81,7 +84,8 @@ flytepropeller:
     # -- If the service account is created by you, make this false
     create: true
     annotations:
-#TBD. See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
+      azure.workload.identity/client-id: {{ .Values.userSettings.clusterClientId }}
+#See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
   resources:
     limits:
       cpu: 1
@@ -108,24 +112,6 @@ flytepropeller:
 flyteagent:
   enabled: false
 
-#
-# FLYTECONSOLE
-#
-
-flyteconsole:
-  replicaCount: 1
-  resources:
-    limits:
-      cpu: 250m
-  affinity:
-    podAntiAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        - labelSelector:
-            matchLabels:
-              app.kubernetes.io/name: flyteconsole
-          topologyKey: kubernetes.io/hostname
-
-#
 # COMMON
 #
 common:
@@ -250,7 +236,7 @@ configmap:
     plugins:
       k8s:
         default-labels:
-            - azure.workload.identity/use: "true"
+          - azure.workload.identity/use: "true"
         default-env-vars:
           - AZURE_STORAGE_ACCOUNT_NAME: "{{ .Values.userSettings.storageAccountName }}"
           - AZURE_STORAGE_ACCOUNT_KEY: "{{ .Values.userSettings.storageAccountKey }}"
@@ -318,6 +304,12 @@ cluster_resource_manager:
   enabled: true
   # -- Starts the cluster resource manager in standalone mode with requisite auth credentials to call flyteadmin service endpoints
   standalone_deploy: false
+  config:
+    cluster_resources:
+      customData:
+        - development:
+            - defaultManagedIdentity:
+                value: "azure.workload.identity/client-id: {{ .Values.userSettings.clusterClientId }}"
   templates:
     # -- Template for namespaces resources
     - key: aa_namespace
@@ -338,3 +330,5 @@ cluster_resource_manager:
         metadata:
           name: default
           namespace: {{ namespace }}
+          annotations:
+            azure.workload.identity/client-id: "{{ .Values.userSettings.clusterClientId }}
