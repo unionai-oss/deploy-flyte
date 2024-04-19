@@ -7,7 +7,11 @@ userSettings:
   storageAccountName: ${storage_account_name}
   storageAccountKey: ${storage_account_key}
   dnsLabel: ${dns_label}
-  clusterClientId: ${workload_identity_client_id}
+  AKSClientId: ${workload_identity_client_id}
+  tenantId: ${tenant_id}
+  spClientId : ${sp_client_id} #Service Principal client ID
+  spClientSecret: ${sp_client_secret}
+
  
 #
 # FLYTEADMIN
@@ -21,7 +25,7 @@ flyteadmin:
     # you can change the name of this role
     create: true
     annotations: 
-      azure.workload.identity/client-id: {{ .Values.userSettings.clusterClientId }}
+      azure.workload.identity/client-id: {{ .Values.userSettings.AKSClientId }}
    #See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
 
   resources:
@@ -55,7 +59,7 @@ datacatalog:
     # -- If the service account is created by you, make this false
     create: true
     annotations:
-      azure.workload.identity/client-id: {{ .Values.userSettings.clusterClientId }}
+      azure.workload.identity/client-id: {{ .Values.userSettings.AKSClientId }}
  # See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations        
   resources:
     limits:
@@ -84,7 +88,7 @@ flytepropeller:
     # -- If the service account is created by you, make this false
     create: true
     annotations:
-      azure.workload.identity/client-id: {{ .Values.userSettings.clusterClientId }}
+      azure.workload.identity/client-id: {{ .Values.userSettings.AKSClientId }}
 #See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
   resources:
     limits:
@@ -239,7 +243,10 @@ configmap:
           - azure.workload.identity/use: "true"
         default-env-vars:
           - AZURE_STORAGE_ACCOUNT_NAME: "{{ .Values.userSettings.storageAccountName }}"
-          - AZURE_STORAGE_ACCOUNT_KEY: "{{ .Values.userSettings.storageAccountKey }}"
+          #- AZURE_STORAGE_ACCOUNT_KEY: "{{ .Values.userSettings.storageAccountKey }}"
+          - AZURE_STORAGE_TENANT_ID: "{{ .Values.userSettings.tenantId }}"
+          - AZURE_STORAGE_CLIENT_ID: "{{ .Values.userSettings.spClientId }}"
+          - AZURE_STORAGE_CLIENT_SECRET: "{{ .Values.userSettings.spClientSecret }}"
 
   # -- Resource manager configuration
   resource_manager:
@@ -309,7 +316,7 @@ cluster_resource_manager:
       customData:
         - development:
             - defaultManagedIdentity:
-                value: "azure.workload.identity/client-id: {{ .Values.userSettings.clusterClientId }}"
+                value: "azure.workload.identity/client-id: {{ .Values.userSettings.AKSClientId }}"
   templates:
     # -- Template for namespaces resources
     - key: aa_namespace
@@ -331,4 +338,4 @@ cluster_resource_manager:
           name: default
           namespace: {{ namespace }}
           annotations:
-            azure.workload.identity/client-id: "{{ .Values.userSettings.clusterClientId }}
+            azure.workload.identity/client-id: "{{ .Values.userSettings.AKSClientId }}
