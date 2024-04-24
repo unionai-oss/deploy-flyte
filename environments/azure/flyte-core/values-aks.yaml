@@ -29,7 +29,8 @@ flyteadmin:
     annotations: 
       azure.workload.identity/client-id: "{{ .Values.userSettings.AKSClientId }}"
    #See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
-
+  initialProjects:
+    - flytesnacks
   resources:
     limits:
       ephemeral-storage: 200Mi
