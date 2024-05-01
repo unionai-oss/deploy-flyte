@@ -18,8 +18,8 @@ resource "helm_release" "flyte-core" {
     dns_label                      = "${local.flyte_domain_label}.${local.location}.cloudapp.azure.com"
     workload_identity_client_id    = azurerm_user_assigned_identity.managed_identity.client_id
     tenant_id                      = local.tenant_id
-    sp_client_id                   = azuread_service_principal.flyte_sp.client_id
-    sp_client_secret               = azuread_service_principal_password.flyte_client_secret.value
+    sp_client_id                   = azuread_application_registration.client_id
+    sp_client_secret               = azuread_application_password.flyte_client_secret.value
     }
     )
   ]
