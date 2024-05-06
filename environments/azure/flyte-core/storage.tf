@@ -12,8 +12,8 @@ resource "azurerm_storage_account" "flyte" {
   account_replication_type      = "LRS"
   account_kind                  = "StorageV2"
   is_hns_enabled                = true
- # public_network_access_enabled = true
- # shared_access_key_enabled     = true
+  public_network_access_enabled = true
+  shared_access_key_enabled     = false
 }
 
 
