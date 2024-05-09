@@ -1,13 +1,13 @@
 data "azurerm_subscription" "current" {}
 
 # WI: Step 2
-resource "azurerm_user_assigned_identity" "managed_identity" { 
+#resource "azurerm_user_assigned_identity" "managed_identity" { 
 
-  name = "flyte-managed-identity"
-  resource_group_name = azurerm_resource_group.flyte.name 
-  location = azurerm_resource_group.flyte.location 
+#  name = "flyte-managed-identity"
+ # resource_group_name = azurerm_resource_group.flyte.name 
+  #location = azurerm_resource_group.flyte.location 
 
-}
+#}
 
 
 #resource "azurerm_role_assignment" "workload_identity_role" {
@@ -35,11 +35,14 @@ depends_on = [ azurerm_user_assigned_identity.managed_identity ]
     enable_auto_scaling = true
   }
 
-  identity {
-    type = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.managed_identity.id]
-  }
+  #identity {
+  #  type = "UserAssigned"
+  #  identity_ids = [azurerm_user_assigned_identity.managed_identity.id]
+  #}
 
+identity {
+  type =  "SystemAssigned"
+}
   lifecycle {
     ignore_changes = [default_node_pool]
   }
@@ -62,8 +65,8 @@ locals {
 # Federated credential for the backend
 resource "azurerm_federated_identity_credential" "federated-identity-propeller" {
   name                = "federated-creds-flytepropeller" 
-  resource_group_name = azurerm_user_assigned_identity.managed_identity.resource_group_name
-  parent_id           = azurerm_user_assigned_identity.managed_identity.id
+  resource_group_name = azurerm_resource_group.flyte.name
+  parent_id           = azuread_application.flyte_app.object_id
   audience            = ["api://AzureADTokenExchange"]
   issuer              = azurerm_kubernetes_cluster.flyte.oidc_issuer_url
   #subject             = formatlist("system:serviceaccount:[%s]", local.flyte_ksa_ns)
@@ -72,8 +75,8 @@ resource "azurerm_federated_identity_credential" "federated-identity-propeller" 
 
 resource "azurerm_federated_identity_credential" "federated-identity-creds-2" {
   name                = "federated-creds-flyteadmin"
-  resource_group_name = azurerm_user_assigned_identity.managed_identity.resource_group_name
-  parent_id           = azurerm_user_assigned_identity.managed_identity.id
+  resource_group_name = azurerm_resource_group.flyte.name
+  parent_id           = azuread_application.flyte_app.object_id
   audience            = ["api://AzureADTokenExchange"]
   issuer              = azurerm_kubernetes_cluster.flyte.oidc_issuer_url
   #subject             = formatlist("system:serviceaccount:[%s]", local.flyte_ksa_ns)
