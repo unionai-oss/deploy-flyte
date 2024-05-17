@@ -140,7 +140,7 @@ common:
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
       kubernetes.io/ingress.class: nginx
       cert-manager.io/cluster-issuer: letsencrypt
-      nginx.ingress.kubernetes.io/proxy-buffer-size: "132k"
+     # nginx.ingress.kubernetes.io/proxy-buffer-size: "132k"
     separateGrpcIngressAnnotations:
       nginx.ingress.kubernetes.io/backend-protocol: GRPC
   databaseSecret:
@@ -169,19 +169,7 @@ common:
 #
 
 storage:
-#  type: stow
-  
-  #limits:
-   # maxDownloadMBs: 5000
- #   type: custom
- 
- # custom:
- #   container: "{{ .Values.userSettings.storageContainerName }}"
- #   enable-multicontainer: true
- #   connection: {}
   type: custom
- # enableMultiContainer: true
- # bucketName: "{{ .Values.userSettings.storageContainerName }}"
   custom:
     container: "{{ .Values.userSettings.storageContainerName }}"
     enable-multicontainer: true
@@ -191,7 +179,6 @@ storage:
       kind: azure
       config:
         account: "{{ .Values.userSettings.storageAccountName }}"
-  
       #key: "{{ .Values.userSettings.storageAccountKey }}" #Hopefully we'll switch this to proper IAM
     
 db:
@@ -233,9 +220,9 @@ configmap:
   task_resource_defaults:
     task_resources:
       defaults:
-        cpu: 1000m
-        memory: 1000Mi
-        storage: 1000Mi
+        cpu: 500m
+        memory: 500Mi
+        storage: 500Mi
       limits:
         storage: 2000Mi
 
@@ -362,5 +349,6 @@ cluster_resource_manager:
         metadata:
           name: default
           namespace: {{ namespace }}
-          annotations:
-            azure.workload.identity/client-id: {{ defaultIamRole }}
+          annotations: 
+            {{ defaultIamRole }}
+

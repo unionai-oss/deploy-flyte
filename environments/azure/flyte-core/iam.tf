@@ -24,13 +24,6 @@ app_role {
 }
 }
 
-#resource "azuread_application_registration" "flyte_app" {
-
-#display_name = "flyte-stow-app"
-
-
-
-#}
 
 #Service Principal for Flyte tasks
 resource "azuread_service_principal" "flyte_stow_sp" {
@@ -39,26 +32,6 @@ resource "azuread_service_principal" "flyte_stow_sp" {
   owners                       = [data.azuread_client_config.current.object_id]
 }
 
-#resource "azuread_app_role_assignment" "role_assignment" {
- # for_each             = { for i, v in local.sa_roles_for_flyte_sp: v => v}
- # app_role_id          = azuread_application.flyte_app.app_role_ids["Admin.All"]
- # principal_object_id  = azuread_application.flyte_app.object_id
- # resource_object_id   = azuread_service_principal.flyte_stow_sp.object_id
-  
-#}
-
-
-#resource "time_rotating" "secret_rotation" {
-#  rotation_days = 180
-#}
-
-#resource "azuread_application_password" "flyte_client_secret" {
- # service_principal_id = azuread_service_principal.flyte_sp.object_id
-  #rotate_when_changed = {
- #  rotation = time_rotating.secret_rotation.id
-  #}
-  #application_id = azuread_application.flyte_app.id
-#}
 
 locals {
   flyte_ksas = ["default"] #The KSA that Task Pods will use 
@@ -74,7 +47,7 @@ locals {
 }
 
 #WI Step 3
-
+#Pending to be handled as a list
 resource azuread_application_federated_identity_credential "workload_identity_service_account_propeller"{
 application_id = azuread_application.flyte_app.id
 display_name = "flytepropeller"
@@ -99,6 +72,13 @@ issuer = azurerm_kubernetes_cluster.flyte.oidc_issuer_url
 subject = "system:serviceaccount:flyte:datacatalog"
 }
 
+resource azuread_application_federated_identity_credential "workload_identity_service_account_default"{
+application_id = azuread_application.flyte_app.id
+display_name = "flytesnacks-development"
+audiences = ["api://AzureADTokenExchange"]
+issuer = azurerm_kubernetes_cluster.flyte.oidc_issuer_url 
+subject = "system:serviceaccount:flytesnacks-development:default"
+}
 #resource azuread_application_federated_identity_credential "workload_identity_service_account"{
 #for_each = local.flyte_ksa_ns
 #application_id = azuread_application.flyte_app.id

@@ -1,5 +1,3 @@
-data "azuread_client_config" "current" {}
-data "azurerm_client_config" "current" {}
 
 ## This section implements the requirements to use Azure AD for stow, the Go library that 
 ## interfaces between Flyte and Azure Blob Storage:
