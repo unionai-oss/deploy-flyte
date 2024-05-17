@@ -16,14 +16,13 @@ resource "helm_release" "flyte-core" {
     storage_account_name           = azurerm_storage_account.flyte.name
     storage_account_key            = azurerm_storage_account.flyte.primary_access_key
     dns_label                      = "${local.flyte_domain_label}.${local.location}.cloudapp.azure.com"
-    workload_identity_client_id    = azurerm_user_assigned_identity.managed_identity.client_id
+    workload_identity_client_id    = azuread_application.flyte_app.client_id
     tenant_id                      = local.tenant_id
-    sp_client_id                   = azuread_application_registration.flyte_app.client_id
-    sp_client_secret               = azuread_application_password.flyte_client_secret.value
+    sp_client_id                   = azuread_service_principal.flyte_stow_sp.client_id
     }
     )
   ]
-  depends_on = [azurerm_postgresql_flexible_server_firewall_rule.all, azurerm_postgresql_flexible_server_database.flyte]
+  depends_on = [azurerm_postgresql_flexible_server_firewall_rule.all, azurerm_postgresql_flexible_server_database.flyte, azurerm_role_assignment.role_assignment]
   # provisioner "local-exec" {
   #   command = "az aks get-credentials --resource-group ${azurerm_resource_group.flyte.name} --name ${azurerm_kubernetes_cluster.flyte.name} --overwrite-existing"
   # }

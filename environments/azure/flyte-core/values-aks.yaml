@@ -5,12 +5,12 @@ userSettings:
   dbHost: ${cosmos_postgres_database_host}
   storageContainerName: ${storage_account_container_name}
   storageAccountName: ${storage_account_name}
-  storageAccountKey: ${storage_account_key}
+  #storageAccountKey: ${storage_account_key}
   dnsLabel: ${dns_label}
   AKSClientId: ${workload_identity_client_id}
   tenantId: ${tenant_id}
   spClientId : ${sp_client_id} #Service Principal client ID
-  spClientSecret: ${sp_client_secret}
+  
 
  
 #
@@ -28,6 +28,7 @@ flyteadmin:
     create: true
     annotations: 
       azure.workload.identity/client-id: "{{ .Values.userSettings.AKSClientId }}"
+
    #See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
   initialProjects:
     - flytesnacks
@@ -169,22 +170,30 @@ common:
 
 storage:
 #  type: stow
-#  enableMultiContainer: true
+  
   #limits:
    # maxDownloadMBs: 5000
  #   type: custom
- # bucketName: "{{ .Values.userSettings.storageContainerName }}"
+ 
  # custom:
  #   container: "{{ .Values.userSettings.storageContainerName }}"
  #   enable-multicontainer: true
  #   connection: {}
-  type: stow
-  stow:
-    kind: azure
-    config:
-      account: "{{ .Values.userSettings.storageAccountName }}"
-      #key: "{{ .Values.userSettings.storageAccountKey }}" #Hopefully we'll switch this to proper IAM
+  type: custom
+ # enableMultiContainer: true
+ # bucketName: "{{ .Values.userSettings.storageContainerName }}"
+  custom:
     container: "{{ .Values.userSettings.storageContainerName }}"
+    enable-multicontainer: true
+    connection: {}
+    type: stow
+    stow:
+      kind: azure
+      config:
+        account: "{{ .Values.userSettings.storageAccountName }}"
+  
+      #key: "{{ .Values.userSettings.storageAccountKey }}" #Hopefully we'll switch this to proper IAM
+    
 db:
   datacatalog:
     database:
@@ -232,7 +241,8 @@ configmap:
 
   core:
     propeller:
-      rawoutput-prefix: "abfs://{{ .Values.userSettings.StorageContainerName }}/propeller"
+      create-flyteworkflow-crd: true
+      rawoutput-prefix: "abfs://{{ .Values.userSettings.storageContainerName }}/propeller"
       workers: 40
       gc-interval: 12h
       max-workflow-retries: 50
@@ -252,10 +262,9 @@ configmap:
           - azure.workload.identity/use: "true"
         default-env-vars:
           - AZURE_STORAGE_ACCOUNT_NAME: "{{ .Values.userSettings.storageAccountName }}"
-          #- AZURE_STORAGE_ACCOUNT_KEY: "{{ .Values.userSettings.storageAccountKey }}"
-          - AZURE_STORAGE_TENANT_ID: "{{ .Values.userSettings.tenantId }}"
-          - AZURE_STORAGE_CLIENT_ID: "{{ .Values.userSettings.spClientId }}"
-          - AZURE_STORAGE_CLIENT_SECRET: "{{ .Values.userSettings.spClientSecret }}"
+    #      - AZURE_STORAGE_TENANT_ID: "{{ .Values.userSettings.tenantId }}"
+     #     - AZURE_STORAGE_CLIENT_ID: "{{ .Values.userSettings.spClientId }}"
+      #    - AZURE_STORAGE_CLIENT_SECRET: "{{ .Values.userSettings.spClientSecret }}"
 
   # -- Resource manager configuration
   resource_manager:
@@ -354,4 +363,4 @@ cluster_resource_manager:
           name: default
           namespace: {{ namespace }}
           annotations:
-            azure.workload.identity/client-id: {{ .Values.userSettings.AKSClientId }}
+            azure.workload.identity/client-id: {{ defaultIamRole }}

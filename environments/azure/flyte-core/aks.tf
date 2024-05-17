@@ -25,7 +25,7 @@ resource "azurerm_kubernetes_cluster" "flyte" {
   workload_identity_enabled = true
   oidc_issuer_enabled = true
 
-depends_on = [ azurerm_user_assigned_identity.managed_identity ]
+#depends_on = [ azurerm_user_assigned_identity.managed_identity ]
   default_node_pool {
     name                = "default"
     vm_size             = "Standard_D2_v2"
@@ -43,45 +43,36 @@ depends_on = [ azurerm_user_assigned_identity.managed_identity ]
 identity {
   type =  "SystemAssigned"
 }
+#How to enable this section to also accept a UserAssignedID
   lifecycle {
     ignore_changes = [default_node_pool]
   }
 }
 
-locals {
-  flyte_ksas = ["default"] #The KSA that Task Pods will use 
-}
-locals {
-  flyte_ksa_ns = toset([
-    for tpl in setproduct(
-      local.flyte_projects,
-      local.flyte_domains,
-      local.flyte_ksas
-    ) : format("%s-%s:%s", tpl...)
-  ])
-}
 
-#WI Step 3
+
+
+
 # Federated credential for the backend
-resource "azurerm_federated_identity_credential" "federated-identity-propeller" {
-  name                = "federated-creds-flytepropeller" 
-  resource_group_name = azurerm_resource_group.flyte.name
-  parent_id           = azuread_application.flyte_app.object_id
-  audience            = ["api://AzureADTokenExchange"]
-  issuer              = azurerm_kubernetes_cluster.flyte.oidc_issuer_url
+#resource "azurerm_federated_identity_credential" "federated-identity-propeller" {
+#  name                = "federated-creds-flytepropeller" 
+#  resource_group_name = azurerm_resource_group.flyte.name
+#  parent_id           = azuread_application.flyte_app.id
+#  audience            = ["api://AzureADTokenExchange"]
+#  issuer              = azurerm_kubernetes_cluster.flyte.oidc_issuer_url
   #subject             = formatlist("system:serviceaccount:[%s]", local.flyte_ksa_ns)
-  subject = "system:serviceaccount:flyte:flytepropeller"
-}
+ # subject = "system:serviceaccount:flyte:flytepropeller"
+#}
 
-resource "azurerm_federated_identity_credential" "federated-identity-creds-2" {
-  name                = "federated-creds-flyteadmin"
-  resource_group_name = azurerm_resource_group.flyte.name
-  parent_id           = azuread_application.flyte_app.object_id
-  audience            = ["api://AzureADTokenExchange"]
-  issuer              = azurerm_kubernetes_cluster.flyte.oidc_issuer_url
+#resource "azurerm_federated_identity_credential" "federated-identity-creds-2" {
+#  name                = "federated-creds-flyteadmin"
+#  resource_group_name = azurerm_resource_group.flyte.name
+#  parent_id           = azuread_application.flyte_app.id
+ # audience            = ["api://AzureADTokenExchange"]
+ # issuer              = azurerm_kubernetes_cluster.flyte.oidc_issuer_url
   #subject             = formatlist("system:serviceaccount:[%s]", local.flyte_ksa_ns)
-  subject = "system:serviceaccount:flyte:flyteadmin"
-}
+#  subject = "system:serviceaccount:flyte:flyteadmin"
+#}
 
 
 #WIP
