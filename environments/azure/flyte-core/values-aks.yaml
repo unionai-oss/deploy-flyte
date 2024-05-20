@@ -139,7 +139,7 @@ common:
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
       kubernetes.io/ingress.class: nginx
-      cert-manager.io/cluster-issuer: letsencrypt
+      cert-manager.io/issuer: letsencrypt-production
      # nginx.ingress.kubernetes.io/proxy-buffer-size: "132k"
     separateGrpcIngressAnnotations:
       nginx.ingress.kubernetes.io/backend-protocol: GRPC
@@ -321,13 +321,13 @@ cluster_resource_manager:
       customData:
         - development:
             - defaultIamRole:
-                value: "azure.workload.identity/client-id:{{ .Values.userSettings.AKSClientId }}"
+                value: "{{ .Values.userSettings.AKSClientId }}"
         - staging:
             - defaultIamRole:
-                value: "azure.workload.identity/client-id:{{ .Values.userSettings.AKSClientId }}"
+                value: "{{ .Values.userSettings.AKSClientId }}"
         - production:
             - defaultIamRole:
-                value: "azure.workload.identity/client-id:{{ .Values.userSettings.AKSClientId }}"
+                value: "{{ .Values.userSettings.AKSClientId }}"
 
   templates:
     # -- Template for namespaces resources
@@ -350,5 +350,5 @@ cluster_resource_manager:
           name: default
           namespace: {{ namespace }}
           annotations: 
-            {{ defaultIamRole }}
+            azure.workload.identity/client-id: {{ defaultIamRole }}
 

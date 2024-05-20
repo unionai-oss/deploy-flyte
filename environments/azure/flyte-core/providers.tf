@@ -14,6 +14,11 @@ terraform {
   backend "azurerm" {}
 }
 
+provider "kubernetes" {
+  host                   = azurerm_kubernetes_cluster.flyte.kube_config.0.host
+  token                  = yamldecode(azurerm_kubernetes_cluster.flyte.kube_config_raw).users[0].user.token
+  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.flyte.kube_config.0.cluster_ca_certificate)
+}
 provider "kubectl" {
   host                   = azurerm_kubernetes_cluster.flyte.kube_config.0.host
   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.flyte.kube_config.0.cluster_ca_certificate)

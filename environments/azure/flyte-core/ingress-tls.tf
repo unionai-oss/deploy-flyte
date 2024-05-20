@@ -51,7 +51,7 @@ resource helm_release "cert-manager" {
   repository = "https://charts.jetstack.io"
   chart = "cert-manager"
   version = "v1.13.2"
-  depends_on = [ kubectl_manifest.cert-manager-crds ]
+  depends_on = [ kubectl_manifest.cert-manager-crds, kubernetes_namespace.cert_manager_ns ]
 
 }
 

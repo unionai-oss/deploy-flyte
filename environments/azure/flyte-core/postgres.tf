@@ -6,14 +6,21 @@ resource "random_password" "postgres" {
 
 
 resource "azurerm_postgresql_flexible_server" "flyte" {
-  name                   = "${local.tenant}-${local.environment}-flyte"
+  name                   = "${local.tenant}-${local.environment}-psqlinstance"
   resource_group_name    = azurerm_resource_group.flyte.name
-  location               = "westus" #azurerm_resource_group.flyte.location
+  location               = azurerm_resource_group.flyte.location
   version                = "15"
   administrator_login    = "flyte"
   administrator_password = random_password.postgres.result
   storage_mb             = 32768
   sku_name               = "B_Standard_B1ms"
+
+  lifecycle {
+      ignore_changes = [
+        zone,
+        high_availability.0.standby_availability_zone
+      ]
+  }
 }
 
 resource "azurerm_postgresql_flexible_server_database" "flyte" {
