@@ -135,7 +135,7 @@ common:
     separateGrpcIngress: true
     tls:
       enabled: true
-      secretName: tls-secret
+      secretName: flyte-tls
     annotations:
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
       kubernetes.io/ingress.class: nginx
