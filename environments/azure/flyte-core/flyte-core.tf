@@ -6,7 +6,7 @@ resource "helm_release" "flyte-core" {
   repository       = "https://flyteorg.github.io/flyte"
   chart            = "flyte-core"
   timeout          = "1200"
-  #version          = "1.9.0"
+  
   values = [templatefile("values-aks.yaml", {
     cosmos_postgres_user           = "flyte"
     cosmos_postgres_password       = random_password.postgres.result
@@ -14,11 +14,8 @@ resource "helm_release" "flyte-core" {
     cosmos_postgres_database_host  = azurerm_postgresql_flexible_server.flyte.fqdn
     storage_account_container_name = azurerm_storage_container.flyte.name
     storage_account_name           = azurerm_storage_account.flyte.name
-    storage_account_key            = azurerm_storage_account.flyte.primary_access_key
     dns_label                      = "${local.flyte_domain_label}.${local.location}.cloudapp.azure.com"
     workload_identity_client_id    = azuread_application.flyte_app.client_id
-    tenant_id                      = local.tenant_id
-    sp_client_id                   = azuread_service_principal.flyte_stow_sp.client_id
     }
     )
   ]
