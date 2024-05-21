@@ -3,7 +3,7 @@
 - [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli#install-terraform) (version 1.3.7)
 - [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli#install)
 - [Helm](https://helm.sh/docs/intro/install/#through-package-managers)
-- Your Microsoft account should have access to an Azure subscription with at least Contributor.
+- Your Microsoft account should have access to an Azure subscription with at least Contributor role.
 - Log into Azure via `az login`
 - Once logged in, create a new:
     - Resource Group
@@ -13,7 +13,7 @@
 
 
 # Create Cluster & Cluster Resources
-1. Go to the `environments/azure/flyte=core` folder and initialize the Terraform backend:
+1. Go to the `environments/azure/flyte-core` folder and initialize the Terraform backend:
 
 ```bash
 cd environments/azure/flyte-core && terraform init -backend=true -backend-config=backend.tfvars
@@ -33,16 +33,17 @@ Apply complete! Resources: 9 added, 0 changed, 0 destroyed.
 
 Outputs:
 
-cluster_name = "unionai-playground-flyte"
-ip_dns_label = "unionai-flyte-playground"
-resource_group_name = "unionai-playground-flyte"
+cluster_endpoint = "flytedeploy01.eastus.cloudapp.azure.com"
 ```
 
+# Testing your deployment
 
-# Get Cluster Config
-- `az aks get-credentials --resource-group unionai-playground-flyte --name unionai-playground-flyte --overwrite-existing`
-- check: `k get pods -n flyte`:
-```
+1. Verify Flyte backend status
+
+
+```bash
+kubectl get pods -n flyte
+
 NAME                                 READY   STATUS    RESTARTS   AGE
 datacatalog-6864645db6-99msb         1/1     Running   0          6m45s
 flyte-pod-webhook-848d7db899-8wltj   1/1     Running   0          6m45s
@@ -52,38 +53,53 @@ flytepropeller-b88f7bf6d-lqc8s       1/1     Running   0          6m45s
 flytescheduler-844db4658c-hfrhv      1/1     Running   0          6m45s
 syncresources-767d7fc77b-5mj6n       1/1     Running   0          6m45s
 ```
+2. Update your `$HOME/.flyte/config,yaml` and configure `endpoint` with the value of the `cluster_endpoint` output:
 
-# Add ingress & TLS (We can think of also putting the following in terraform)
-## add ingress
-- `helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx`
-- `helm repo update`
-- 
+Example:
+```yaml
+...
+admin:
+  endpoint: dns:///flytedeploy01.eastus.cloudapp.azure.com" 
+  insecure: false #it means, the connection uses SSL, even if it's a temporary cert-manager cert.
+...
+#Uncomment only if you want to test CLI commands and the certificate is not generated yet.
+# You can confirm the cert by either going to the UI (a valid certificate should be used) or
+#from your terminal: kubectl get challenges.acme.cert-manager.io -n flyte (there should not be any pending challenge). With this flag enabled, SSL is still used but the client doesn't verify the certificate chain.
+
+  #insecureSkipVerify: true 
 ```
-helm install ingress-nginx ingress-nginx/ingress-nginx \
---create-namespace --namespace ingress \
---set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz
+> NOTE: this configuretion step is only needed for CLI access (`flytectl` or `pyflyte`), not for the UI.
+
+3. Save the following "hello world" workflow definition:
+```bash
+cat <<< 'EOF' >hello_world.py
+from flytekit import task, workflow
+@task
+def say_hello() -> str:
+    return "hello world"
+@workflow
+def my_wf() -> str:
+    res = say_hello()
+    return res
+if __name__ == "__main__":
+    print(f"Running my_wf() {my_wf()}")
+EOF
 ```
-## assign dns label to ingress controller ip
-- `./environments/azure/flyte-core/connect_flyte.sh unionai-playground-flyte unionai-playground-flyte unionai-flyte-playground` (try to make it part of the ingress module)
-## install cert manager
-
-- `kubectl label namespace ingress cert-manager.io/disable-validation=true` (make part of the ingress module)
-- `helm repo add jetstack https://charts.jetstack.io`
-- `helm repo update`
-- 
+4. Execute the workflow on the Flyte cluster:
+```bash
+pyflyte run --remote hello_world.py my_wf
 ```
-helm install cert-manager jetstack/cert-manager \
-  --namespace ingress \
-  --version=v1.8.0 \
-  --set installCRDs=true \
-  --set nodeSelector."kubernetes\.io/os"=linux
+Example output:
+```bash
+Running Execution on Remote.
+
+[✔] Go to https://flytedeploy01.eastus.cloudapp.azure.com/console/projects/flytesnacks/domains/development/executions/fae18cf6750bd4d64bc7 to see execution in the console.
 ```
-## apply certmanager cluster issuer
-- `k apply -f environments/azure/flyte-core/cluster-issuer.yaml`
+5. Go to the console and verify the succesful execution:
 
-# Voila 🎉
-- [unionai-flyte-playground.westus2.cloudapp.azure.com](https://unionai-flyte-playground.westus2.cloudapp.azure.com)
+![](https://raw.githubusercontent.com/flyteorg/static-resources/main/common/flyte-on-azure-execution.png)  
 
-# Delete Cluster
-- `terraform -chdir=environments/azure/flyte-core destroy`
+**Congratulations!**  
+You have a fully working Flyte environment on Azure.
 
+From this point on, you can continue your learning journey by going through the [Flyte Fundamentals](https://docs.flyte.org/en/latest/flyte_fundamentals/index.html) tutorials.
