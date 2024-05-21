@@ -14,12 +14,12 @@
  }
  }
 
-resource kubernetes_secret "flyte-tls-secret" {
-  metadata {
-   name = "flyte-tls"
-   namespace = "flyte"
-  }
-  }
+#resource kubernetes_secret "flyte-tls-secret" {
+ # metadata {
+ #  name = "flyte-tls"
+  # namespace = "flyte"
+  #}
+  #}
 
 resource kubernetes_namespace "cert_manager_ns"{
  metadata {
@@ -63,10 +63,9 @@ resource helm_release "cert-manager" {
 resource kubectl_manifest "cert-manager-issuer" {
      yaml_body = (<<-YAML
 apiVersion: cert-manager.io/v1
-kind: Issuer
+kind: ClusterIssuer
 metadata:
   name: letsencrypt-production
-  namespace: flyte
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
