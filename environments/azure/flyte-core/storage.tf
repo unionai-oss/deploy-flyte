@@ -1,6 +1,4 @@
 
-## This section implements the requirements to use Azure AD for stow, the Go library that 
-## interfaces between Flyte and Azure Blob Storage:
 
 resource "azurerm_storage_account" "flyte" {
   name                          = "${local.tenant}${local.environment}flytetf"

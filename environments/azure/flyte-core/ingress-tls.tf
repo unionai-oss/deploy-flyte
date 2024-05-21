@@ -14,13 +14,6 @@
  }
  }
 
-#resource kubernetes_secret "flyte-tls-secret" {
- # metadata {
- #  name = "flyte-tls"
-  # namespace = "flyte"
-  #}
-  #}
-
 resource kubernetes_namespace "cert_manager_ns"{
  metadata {
     name = "cert-manager"

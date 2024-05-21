@@ -2,28 +2,10 @@
 data "azuread_client_config" "current" {}
 ### IAM for stow
 
-locals {
-  sa_roles_for_flyte_sp = [
-    "b24988ac-6180-42a0-ab88-20f7382dd24c", "b7e6dc6d-f1e8-4753-8033-0f276bb0955b"
-  ]
-}
-## App registration
-resource "random_uuid" "role_id" {
-}
-
 resource "azuread_application" "flyte_app" {
   display_name = "flyte_app"
   owners       = [data.azuread_client_config.current.object_id]
-
-app_role {
-  allowed_member_types = ["Application"]
-  description = "This is for stow"
-  display_name = "Stow"
-  id = "${random_uuid.role_id.result}"
-  value = "Admin.All"
 }
-}
-
 
 #Service Principal for Flyte tasks
 resource "azuread_service_principal" "flyte_stow_sp" {
@@ -91,7 +73,7 @@ subject = "system:serviceaccount:flytesnacks-development:default"
 ## Role assignment for stow
 locals {
   sa_roles_for_stow = [
-    "Contributor", "Storage Blob Data Owner"
+     "Storage Blob Data Owner"
   ]
 }
 
