@@ -5,6 +5,10 @@
    repository       = "https://kubernetes.github.io/ingress-nginx"
    chart            = "ingress-nginx"
    depends_on       = [helm_release.flyte-core]
+   set{
+    name = "controller.service.annotations.service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path"
+    value = "/healthz"
+   }
     provisioner "local-exec" {
       command = "./scripts/connect_flyte.sh ${azurerm_resource_group.flyte.name} ${azurerm_kubernetes_cluster.flyte.name} ${local.flyte_domain_label}"
  }

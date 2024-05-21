@@ -87,9 +87,3 @@ helm install cert-manager jetstack/cert-manager \
 # Delete Cluster
 - `terraform -chdir=environments/azure/flyte-core destroy`
 
-
-# Things i want to improve besides better documentation
-- merge values & values-aks.yaml into one file
-- clean up this one yaml. A lot of unused resources in there and also references to aws
-- Make use of AKS cluster workload identities and connect the to k8s service accounts
-- For stow also use identities and get rid of piping the storage acccount key, this is bad practise (There was a merged PR of Terence Kent, which i cannot find atm)
