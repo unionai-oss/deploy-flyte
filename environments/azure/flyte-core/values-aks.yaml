@@ -245,7 +245,7 @@ configmap:
           - azure.workload.identity/use: "true"
         default-env-vars:
           - AZURE_STORAGE_ACCOUNT_NAME: "{{ .Values.userSettings.storageAccountName }}"
-    
+        default-pod-template-name: "flyte-template" 
   # -- Resource manager configuration
   resource_manager:
     # -- resource manager configuration

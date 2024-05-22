@@ -1,7 +1,5 @@
 data "azurerm_subscription" "current" {}
 
-# WI: Step 2  
-#WI: step 1
 resource "azurerm_kubernetes_cluster" "flyte" {
   name                = "${local.tenant}-${local.environment}-flytetf"
   location            = azurerm_resource_group.flyte.location
@@ -10,7 +8,6 @@ resource "azurerm_kubernetes_cluster" "flyte" {
   workload_identity_enabled = true
   oidc_issuer_enabled = true
 
-#depends_on = [ azurerm_user_assigned_identity.managed_identity ]
   default_node_pool {
     name                = "default"
     vm_size             = "Standard_D2_v2"

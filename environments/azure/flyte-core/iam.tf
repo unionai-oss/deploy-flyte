@@ -1,6 +1,5 @@
 
 data "azuread_client_config" "current" {}
-### IAM for stow
 
 resource "azuread_application" "flyte_app" {
   display_name = "flyte_app"
@@ -28,47 +27,33 @@ locals {
   ])
 }
 
-#WI Step 3
-#Pending to be handled as a list
-resource azuread_application_federated_identity_credential "workload_identity_service_account_propeller"{
+# Federated Identity for the ServiceAccount used by the Pods bootstraped by Flyte with each execution
+resource azuread_application_federated_identity_credential "flyte_tasks_federated_identity"{
+for_each = local.flyte_ksa_ns
 application_id = azuread_application.flyte_app.id
-display_name = "flytepropeller"
-audiences = ["api://AzureADTokenExchange"]
+display_name = each.key
+audiences = ["api://AzureADTokenEchange"]
 issuer = azurerm_kubernetes_cluster.flyte.oidc_issuer_url 
-subject = "system:serviceaccount:flyte:flytepropeller"
+subject = format("system:serviceaccount:%v", each.value)
 }
 
-resource azuread_application_federated_identity_credential "workload_identity_service_account_admin"{
-application_id = azuread_application.flyte_app.id
-display_name = "flyteadmin"
-audiences = ["api://AzureADTokenExchange"]
-issuer = azurerm_kubernetes_cluster.flyte.oidc_issuer_url 
-subject = "system:serviceaccount:flyte:flyteadmin"
-}
+#These are individual KSAs that the flyte-core Helm chart creates. 
+#They are also the components that require access to blob storage.
+locals {
+  flyte_backend_ksas = ["flytepropeller","flyteadmin","datacatalog"]
 
-resource azuread_application_federated_identity_credential "workload_identity_service_account_dc"{
-application_id = azuread_application.flyte_app.id
-display_name = "datacatalog"
-audiences = ["api://AzureADTokenExchange"]
-issuer = azurerm_kubernetes_cluster.flyte.oidc_issuer_url 
-subject = "system:serviceaccount:flyte:datacatalog"
 }
+# Federated Identity for the Flyte backend components
 
-resource azuread_application_federated_identity_credential "workload_identity_service_account_default"{
+resource azuread_application_federated_identity_credential "flyte_backend_federated_identity"{
+for_each = toset(local.flyte_backend_ksas)
 application_id = azuread_application.flyte_app.id
-display_name = "flytesnacks-development"
+display_name = each.key
 audiences = ["api://AzureADTokenExchange"]
 issuer = azurerm_kubernetes_cluster.flyte.oidc_issuer_url 
-subject = "system:serviceaccount:flytesnacks-development:default"
+
+subject =format("system:serviceaccount:flyte:%v", each.value)
 }
-#resource azuread_application_federated_identity_credential "workload_identity_service_account"{
-#for_each = local.flyte_ksa_ns
-#application_id = azuread_application.flyte_app.id
-#display_name = each.key
-#audiences = ["api://AzureADTokenEchange"]
-#issuer = azurerm_kubernetes_cluster.flyte.oidc_issuer_url 
-#subject = format("system:serviceaccount:[%s]", local.flyte_ksa_ns)
-#}
 
 ## Role assignment for stow
 locals {
@@ -77,7 +62,7 @@ locals {
   ]
 }
 
-resource "azurerm_role_assignment" "role_assignment" {
+resource "azurerm_role_assignment" "stow_role_assignment" {
   for_each             = { for i, v in local.sa_roles_for_stow: v => v}
   scope                = azurerm_storage_account.flyte.id
   role_definition_name = each.value
