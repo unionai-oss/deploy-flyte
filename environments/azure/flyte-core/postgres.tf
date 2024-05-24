@@ -6,7 +6,7 @@ resource "random_password" "postgres" {
 
 
 resource "azurerm_postgresql_flexible_server" "flyte" {
-  name                   = "${local.tenant}-${local.environment}-psqlinstance"
+  name                   = "${local.tenant}-${local.environment}"
   resource_group_name    = azurerm_resource_group.flyte.name
   location               = azurerm_resource_group.flyte.location
   version                = "15"

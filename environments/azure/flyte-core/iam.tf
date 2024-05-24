@@ -31,10 +31,10 @@ locals {
 resource azuread_application_federated_identity_credential "flyte_tasks_federated_identity"{
 for_each = local.flyte_ksa_ns
 application_id = azuread_application.flyte_app.id
-display_name = each.key
+display_name = trimsuffix(each.value, ":default" )
 audiences = ["api://AzureADTokenEchange"]
 issuer = azurerm_kubernetes_cluster.flyte.oidc_issuer_url 
-subject = format("system:serviceaccount:%v", each.value)
+subject = format("system:serviceaccount:%s", each.value)
 }
 
 #These are individual KSAs that the flyte-core Helm chart creates. 
@@ -52,7 +52,7 @@ display_name = each.key
 audiences = ["api://AzureADTokenExchange"]
 issuer = azurerm_kubernetes_cluster.flyte.oidc_issuer_url 
 
-subject =format("system:serviceaccount:flyte:%v", each.value)
+subject =format("system:serviceaccount:flyte:%s", each.value)
 }
 
 ## Role assignment for stow

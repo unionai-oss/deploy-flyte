@@ -7,9 +7,6 @@ userSettings:
   storageAccountName: ${storage_account_name}
   dnsLabel: ${dns_label}
   AKSClientId: ${workload_identity_client_id}
-
-  
-
  
 #
 # FLYTEADMIN
