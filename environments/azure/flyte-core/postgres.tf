@@ -1,12 +1,12 @@
 resource "random_password" "postgres" {
   length           = 20
   special          = true
-  override_special = "_%@"
+  #override_special = "_%@"
 }
 
 
 resource "azurerm_postgresql_flexible_server" "flyte" {
-  name                   = "${local.tenant}-${local.environment}"
+  name                   = "${local.tenant}-${local.environment}-flyte"
   resource_group_name    = azurerm_resource_group.flyte.name
   location               = azurerm_resource_group.flyte.location
   version                = "15"

@@ -1,4 +1,5 @@
 userSettings:
+
   dbPassword: ${cosmos_postgres_password}
   dbUser: ${cosmos_postgres_user}
   dbName: ${cosmos_postgres_database_name}
@@ -6,7 +7,8 @@ userSettings:
   storageContainerName: ${storage_account_container_name}
   storageAccountName: ${storage_account_name}
   dnsLabel: ${dns_label}
-  AKSClientId: ${workload_identity_client_id}
+  backendWIClientId: ${backend_wi_client_id}
+  tasksWIClientId: ${tasks_wi_client_id}
  
 #
 # FLYTEADMIN
@@ -21,7 +23,7 @@ flyteadmin:
     # you can change the name of this role
     create: true
     annotations: 
-      azure.workload.identity/client-id: "{{ .Values.userSettings.AKSClientId }}"
+      azure.workload.identity/client-id: "{{ .Values.userSettings.backendWIClientId }}"
    #See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
   initialProjects:
     - flytesnacks
@@ -60,7 +62,7 @@ datacatalog:
     # -- If the service account is created by you, make this false
     create: true
     annotations:
-      azure.workload.identity/client-id: "{{ .Values.userSettings.AKSClientId }}"
+      azure.workload.identity/client-id: "{{ .Values.userSettings.backendWIClientId }}"
  # See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations        
   resources:
     limits:
@@ -91,7 +93,7 @@ flytepropeller:
     # -- If the service account is created by you, make this false
     create: true
     annotations:
-      azure.workload.identity/client-id: "{{ .Values.userSettings.AKSClientId }}"
+      azure.workload.identity/client-id: "{{ .Values.userSettings.backendWIClientId }}"
 #See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
   resources:
     limits:
@@ -310,14 +312,14 @@ cluster_resource_manager:
     cluster_resources:
       customData:
         - development:
-            - defaultIamRole:
-                value: "{{ .Values.userSettings.AKSClientId }}"
+            - WIClientId:
+                value: "{{ .Values.userSettings.tasksWIClientId }}"
         - staging:
-            - defaultIamRole:
-                value: "{{ .Values.userSettings.AKSClientId }}"
+            - WIClientId:
+                value: "{{ .Values.userSettings.tasksWIClientId }}"
         - production:
-            - defaultIamRole:
-                value: "{{ .Values.userSettings.AKSClientId }}"
+            - WIClientId:
+                value: "{{ .Values.userSettings.tasksWIClientId }}"
 
   templates:
     # -- Template for namespaces resources
@@ -340,5 +342,5 @@ cluster_resource_manager:
           name: default
           namespace: {{ namespace }}
           annotations: 
-            azure.workload.identity/client-id: {{ defaultIamRole }}
+            azure.workload.identity/client-id: {{ WIClientId }}
 
