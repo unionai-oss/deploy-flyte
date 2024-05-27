@@ -5,15 +5,23 @@
 - [Helm](https://helm.sh/docs/intro/install/#through-package-managers)
 - Your Microsoft account should have access to an Azure subscription with at least Contributor role.
 - Log into Azure via `az login`
+
+
+# Configure the Terraform backend
+
 - Once logged in, create a new:
     - Resource Group
     - Storage account with default settings
     - Storage container for the Terraform state
 - Put these values into [backend.tfvars](./backend.tfvars)
 
+# Update locals values
+
+- Go to [locals.tf](./locals.tf) and update the values to match your desired configuration.
+
 
 # Create Cluster & Cluster Resources
-1. Go to the `environments/azure/flyte-core` folder and initialize the Terraform backend:
+1. From the `environments/azure/flyte-core` folder, initialize the Terraform backend:
 
 ```bash
 cd environments/azure/flyte-core && terraform init -backend=true -backend-config=backend.tfvars
@@ -38,7 +46,7 @@ cluster_endpoint = "flytedeploy01.eastus.cloudapp.azure.com"
 
 # Testing your deployment
 
-1. Verify Flyte backend status
+1. Verify Flyte's backend status
 
 
 ```bash
@@ -54,6 +62,7 @@ flytescheduler-844db4658c-hfrhv      1/1     Running   0          6m45s
 syncresources-767d7fc77b-5mj6n       1/1     Running   0          6m45s
 ```
 2. Update your `$HOME/.flyte/config,yaml` and configure `endpoint` with the value of the `cluster_endpoint` output:
+>NOTE: installing `flytectl` will typically create an initial `config.yaml` file. [Learn more](https://docs.flyte.org/projects/flytectl/en/latest/#installation).
 
 Example:
 ```yaml
@@ -68,7 +77,8 @@ admin:
 
   #insecureSkipVerify: true 
 ```
-> NOTE: this configuretion step is only needed for CLI access (`flytectl` or `pyflyte`), not for the UI.
+> NOTE: this configuration step is only needed for CLI access (`flytectl` or `pyflyte`), not for the UI.
+
 
 3. Save the following "hello world" workflow definition:
 ```bash

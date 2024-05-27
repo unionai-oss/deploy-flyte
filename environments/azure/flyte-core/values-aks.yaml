@@ -1,5 +1,4 @@
 userSettings:
-
   dbPassword: ${cosmos_postgres_password}
   dbUser: ${cosmos_postgres_user}
   dbName: ${cosmos_postgres_database_name}

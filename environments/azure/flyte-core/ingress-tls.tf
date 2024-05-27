@@ -38,7 +38,6 @@ data kubectl_file_documents "cert-manager-manifest" {
 resource kubectl_manifest "cert-manager-crds" {
  for_each = data.kubectl_file_documents.cert-manager-manifest.manifests
  yaml_body = each.value
-#depends_on = [ helm_release.ingress-nginx ]
 }
 
 resource helm_release "cert-manager" {
