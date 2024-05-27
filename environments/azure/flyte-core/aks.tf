@@ -17,11 +17,6 @@ resource "azurerm_kubernetes_cluster" "flyte" {
     enable_auto_scaling = true
   }
 
-  #identity {
-  #  type = "UserAssigned"
-  #  identity_ids = [azurerm_user_assigned_identity.managed_identity.id]
-  #}
-
 identity {
   type =  "SystemAssigned"
 }
