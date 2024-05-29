@@ -1,7 +1,7 @@
 
 
 resource "azurerm_storage_account" "flyte" {
-  name                          = "${local.tenant}${local.environment}flytetf"
+  name                          = "${local.tenant}${local.environment}"
   resource_group_name           = azurerm_resource_group.flyte.name
   location                      = azurerm_resource_group.flyte.location
   account_tier                  = "Standard"
