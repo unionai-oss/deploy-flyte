@@ -3,8 +3,8 @@ locals {
   environment        = "deployment"
   tenant             = "mytenant"
   location           = "eastus" #Azure region or zone
-  subscription_id    = "<MY_SUBSCRIPTION_ID>"
-  tenant_id          = "<MY_TENANT_ID>"
+  subscription_id    = "8c8589f3-42da-4083-be83-ff9b12412edd"
+  tenant_id          = "35356303-ece0-4649-85bb-c8a9c67fd341"
   
   #You must replace this email address with your own.
   # Let's Encrypt will use this to contact you about expiring

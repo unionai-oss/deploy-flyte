@@ -14,14 +14,26 @@
  }
  }
 
-resource kubernetes_namespace "cert_manager_ns"{
- metadata {
-    name = "cert-manager"
-    labels = {
-         "cert-manager.io/disable-validation" = "true"
-    }
- }
-}
+#resource kubernetes_namespace "cert_manager_ns"{
+ #metadata {
+  #  name = "cert-manager"
+   # labels = {
+    #     "cert-manager.io/disable-validation" = "true"
+    #}
+ #}
+#}
+
+resource kubectl_manifest "cert-manager-ns" {
+     yaml_body = (<<-YAML
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager
+  labels:
+    cert-manager.io/disable-validation:  "true"  
+    YAML
+     )
+} 
 
 data "http" "manifestfile" {
   url = "https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.crds.yaml"
@@ -47,7 +59,7 @@ resource helm_release "cert-manager" {
   repository = "https://charts.jetstack.io"
   chart = "cert-manager"
   version = "v1.13.2"
-  depends_on = [ kubectl_manifest.cert-manager-crds, kubernetes_namespace.cert_manager_ns ]
+  depends_on = [ kubectl_manifest.cert-manager-crds, kubectl_manifest.cert-manager-ns ]
 
 }
 

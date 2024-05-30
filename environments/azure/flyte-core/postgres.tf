@@ -1,6 +1,7 @@
 resource "random_password" "postgres" {
   length           = 20
   special          = true
+  override_special = "@="
 }
 
 
