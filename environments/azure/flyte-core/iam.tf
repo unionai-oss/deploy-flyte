@@ -1,27 +1,13 @@
 
-data "azuread_client_config" "current" {}
-
-resource "azuread_application" "flyte_backend" {
-  display_name = "flyte_backend"
-  owners       = [data.azuread_client_config.current.object_id]
+resource "azurerm_user_assigned_identity" "flyte_admin" {
+  location            = azurerm_resource_group.flyte.location
+  name                = "${local.tenant}-${local.environment}-flyte-admin"
+  resource_group_name = azurerm_resource_group.flyte.name
 }
-
-resource "azuread_application" "flyte_tasks" {
-  display_name = "flyte_tasks"
-  owners       = [data.azuread_client_config.current.object_id]
-}
-#Service Principal for Flyte backend components
-resource "azuread_service_principal" "flyte_backend_sp" {
-  client_id                    = azuread_application.flyte_backend.client_id
-  #app_role_assignment_required = true
-  owners                       = [data.azuread_client_config.current.object_id]
-}
-
-#Service Principal for Flyte tasks
-resource "azuread_service_principal" "flyte_tasks_sp" {
-  client_id                    = azuread_application.flyte_tasks.client_id
-  #app_role_assignment_required = true
-  owners                       = [data.azuread_client_config.current.object_id]
+resource "azurerm_user_assigned_identity" "flyte_user" {
+  location            = azurerm_resource_group.flyte.location
+  name                = "${local.tenant}-${local.environment}-flyte-user"
+  resource_group_name = azurerm_resource_group.flyte.name
 }
 
 locals {
@@ -37,53 +23,53 @@ locals {
   ])
 }
 
-#Federated Identity for the Task's ServiceAccounts
-resource azuread_application_federated_identity_credential "flyte_tasks_federated_identity"{
-for_each = local.flyte_ksa_ns
-application_id = azuread_application.flyte_tasks.id
-display_name = trimsuffix(each.value, ":default" )
-audiences = ["api://AzureADTokenExchange"]
-issuer = azurerm_kubernetes_cluster.flyte.oidc_issuer_url 
-subject = format("system:serviceaccount:%s", each.value)
+#Federated Identity for the Flyte User's ServiceAccounts
+resource "azurerm_federated_identity_credential" "flyte_user_federated_identity" {
+  for_each            = local.flyte_ksa_ns
+  name                = replace(each.value, ":", "-")
+  resource_group_name = azurerm_resource_group.flyte.name
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = azurerm_kubernetes_cluster.flyte.oidc_issuer_url
+  parent_id           = azurerm_user_assigned_identity.flyte_user.id
+  subject             = format("system:serviceaccount:%s", each.value)
 }
 
 #These are individual KSAs that the flyte-core Helm chart creates. 
 #They are also the backend components that require access to blob storage.
 locals {
-  flyte_backend_ksas = ["flytepropeller","flyteadmin","datacatalog"]
+  flyte_backend_ksas = ["flytepropeller", "flyteadmin", "datacatalog"]
 
 }
-# Federated Identity for the Flyte backend components
-
-resource azuread_application_federated_identity_credential "flyte_backend_federated_identity"{
-for_each = toset(local.flyte_backend_ksas)
-application_id = azuread_application.flyte_backend.id
-display_name = each.key
-audiences = ["api://AzureADTokenExchange"]
-issuer = azurerm_kubernetes_cluster.flyte.oidc_issuer_url 
-
-subject =format("system:serviceaccount:flyte:%s", each.value)
+# Federated Identity for the Flyte Admin components
+resource "azurerm_federated_identity_credential" "flyte_admin_federated_identity" {
+  for_each            = toset(local.flyte_backend_ksas)
+  name                = each.value
+  resource_group_name = azurerm_resource_group.flyte.name
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = azurerm_kubernetes_cluster.flyte.oidc_issuer_url
+  parent_id           = azurerm_user_assigned_identity.flyte_admin.id
+  subject             = format("system:serviceaccount:flyte:%s", each.value)
 }
 
 ## Role assignment for stow (backend module used by Flyte to access blob storage)
 locals {
   sa_roles_for_stow = [
-     "Storage Blob Data Owner"
+    "Storage Blob Data Owner"
   ]
 }
 
-#Role assignment for Flyte tasks
-resource "azurerm_role_assignment" "tasks_role_assignment" {
-  for_each             = { for i, v in local.sa_roles_for_stow: v => v}
+#Role assignment for Flyte User Managed Identity
+resource "azurerm_role_assignment" "user_role_assignment" {
+  for_each             = { for i, v in local.sa_roles_for_stow : v => v }
   scope                = azurerm_storage_account.flyte.id
   role_definition_name = each.value
-  principal_id         = azuread_service_principal.flyte_tasks_sp.object_id
+  principal_id         = azurerm_user_assigned_identity.flyte_user.principal_id
 }
 
-#Role assignment for Flyte backend
-resource "azurerm_role_assignment" "backend_role_assignment" {
-  for_each             = { for i, v in local.sa_roles_for_stow: v => v}
+#Role assignment for Flyte Admin Managed Identity
+resource "azurerm_role_assignment" "admin_role_assignment" {
+  for_each             = { for i, v in local.sa_roles_for_stow : v => v }
   scope                = azurerm_storage_account.flyte.id
   role_definition_name = each.value
-  principal_id         = azuread_service_principal.flyte_backend_sp.object_id
+  principal_id         = azurerm_user_assigned_identity.flyte_admin.principal_id
 }
