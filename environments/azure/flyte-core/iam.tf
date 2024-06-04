@@ -40,7 +40,7 @@ locals {
   flyte_backend_ksas = ["flytepropeller", "flyteadmin", "datacatalog"]
 
 }
-# Federated Identity for the Flyte Admin components
+# Federated Identity for the Flyte Backend components
 resource "azurerm_federated_identity_credential" "flyte_backend_federated_identity" {
   for_each            = toset(local.flyte_backend_ksas)
   name                = each.value
@@ -66,7 +66,7 @@ resource "azurerm_role_assignment" "user_role_assignment" {
   principal_id         = azurerm_user_assigned_identity.flyte_user.principal_id
 }
 
-#Role assignment for Flyte Admin Managed Identity
+#Role assignment for Flyte Backend Managed Identity
 resource "azurerm_role_assignment" "backend_role_assignment" {
   for_each             = { for i, v in local.sa_roles_for_stow : v => v }
   scope                = azurerm_storage_account.flyte.id
