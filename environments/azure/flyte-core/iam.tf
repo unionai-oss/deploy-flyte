@@ -1,7 +1,7 @@
 
-resource "azurerm_user_assigned_identity" "flyte_admin" {
+resource "azurerm_user_assigned_identity" "flyte_backend" {
   location            = azurerm_resource_group.flyte.location
-  name                = "${local.tenant}-${local.environment}-flyte-admin"
+  name                = "${local.tenant}-${local.environment}-flyte-backend"
   resource_group_name = azurerm_resource_group.flyte.name
 }
 resource "azurerm_user_assigned_identity" "flyte_user" {
@@ -41,13 +41,13 @@ locals {
 
 }
 # Federated Identity for the Flyte Admin components
-resource "azurerm_federated_identity_credential" "flyte_admin_federated_identity" {
+resource "azurerm_federated_identity_credential" "flyte_backend_federated_identity" {
   for_each            = toset(local.flyte_backend_ksas)
   name                = each.value
   resource_group_name = azurerm_resource_group.flyte.name
   audience            = ["api://AzureADTokenExchange"]
   issuer              = azurerm_kubernetes_cluster.flyte.oidc_issuer_url
-  parent_id           = azurerm_user_assigned_identity.flyte_admin.id
+  parent_id           = azurerm_user_assigned_identity.flyte_backend.id
   subject             = format("system:serviceaccount:flyte:%s", each.value)
 }
 
@@ -67,9 +67,9 @@ resource "azurerm_role_assignment" "user_role_assignment" {
 }
 
 #Role assignment for Flyte Admin Managed Identity
-resource "azurerm_role_assignment" "admin_role_assignment" {
+resource "azurerm_role_assignment" "backend_role_assignment" {
   for_each             = { for i, v in local.sa_roles_for_stow : v => v }
   scope                = azurerm_storage_account.flyte.id
   role_definition_name = each.value
-  principal_id         = azurerm_user_assigned_identity.flyte_admin.principal_id
+  principal_id         = azurerm_user_assigned_identity.flyte_backend.principal_id
 }
