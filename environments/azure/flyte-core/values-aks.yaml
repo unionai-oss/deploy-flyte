@@ -1,0 +1,344 @@
+userSettings:
+  dbPassword: ${cosmos_postgres_password}
+  dbUser: ${cosmos_postgres_user}
+  dbName: ${cosmos_postgres_database_name}
+  dbHost: ${cosmos_postgres_database_host}
+  storageContainerName: ${storage_account_container_name}
+  storageAccountName: ${storage_account_name}
+  dnsLabel: ${dns_label}
+  backendWIClientId: ${backend_wi_client_id}
+  tasksWIClientId: ${tasks_wi_client_id}
+ 
+#
+# FLYTEADMIN
+#
+
+flyteadmin:
+  podLabels:
+    azure.workload.identity/use: "true"
+  replicaCount: 1
+  serviceAccount:
+    # -- If the service account is created by you, make this false, else a new service account will be created and the iam-role-flyte will be added
+    # you can change the name of this role
+    create: true
+    annotations: 
+      azure.workload.identity/client-id: "{{ .Values.userSettings.backendWIClientId }}"
+   #See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
+  initialProjects:
+    - flytesnacks
+  resources:
+    limits:
+      ephemeral-storage: 200Mi
+    requests:
+      cpu: 50m
+      ephemeral-storage: 200Mi
+      memory: 200Mi
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: flyteadmin
+          topologyKey: kubernetes.io/hostname
+
+#
+# FLYTESCHEDULER
+#
+
+flytescheduler:
+  podLabels:
+    azure.workload.identity/use: "true"
+
+#
+# DATACATALOG
+#
+
+datacatalog:
+  podLabels:
+    azure.workload.identity/use: "true"
+  replicaCount: 1
+  serviceAccount:
+    # -- If the service account is created by you, make this false
+    create: true
+    annotations:
+      azure.workload.identity/client-id: "{{ .Values.userSettings.backendWIClientId }}"
+ # See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations        
+  resources:
+    limits:
+      cpu: 1
+      ephemeral-storage: 200Mi
+    requests:
+      cpu: 500m
+      ephemeral-storage: 200Mi
+      memory: 200Mi
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: datacatalog
+          topologyKey: kubernetes.io/hostname
+
+#
+# FLYTEPROPELLER
+#
+
+flytepropeller:
+  podLabels:
+    azure.workload.identity/use: "true"
+  replicaCount: 1
+  manager: false
+  serviceAccount:
+    # -- If the service account is created by you, make this false
+    create: true
+    annotations:
+      azure.workload.identity/client-id: "{{ .Values.userSettings.backendWIClientId }}"
+#See https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview?tabs=java#service-account-annotations   
+  resources:
+    limits:
+      cpu: 1
+      ephemeral-storage: 1Gi
+      memory: 2Gi
+    requests:
+      cpu: 1
+      ephemeral-storage: 1Gi
+      memory: 2Gi
+  cacheSizeMbs: 1024
+  # -- Sets priorityClassName for propeller pod(s).
+  priorityClassName: "system-cluster-critical"
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: flytepropeller
+          topologyKey: kubernetes.io/hostname
+
+#
+# FLYTE_AGENT
+#
+flyteagent:
+  enabled: false
+
+# COMMON
+#
+common:
+  ingress:
+    host: "{{ .Values.userSettings.dnsLabel }}"
+    ingressClassName: nginx
+    separateGrpcIngress: true
+    tls:
+      enabled: true
+      secretName: flyte-tls
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-production
+     # nginx.ingress.kubernetes.io/proxy-buffer-size: "132k"
+    separateGrpcIngressAnnotations:
+      nginx.ingress.kubernetes.io/backend-protocol: GRPC
+  databaseSecret:
+    name: db-pass
+    secretManifest:
+      # -- Leave it empty if your secret already exists
+      # Else you can create your own secret object. You can use Kubernetes secrets, else you can configure external secrets
+      # For external secrets please install Necessary dependencies, like, of your choice
+      # - https://github.com/hashicorp/vault
+      # - https://github.com/godaddy/kubernetes-external-secrets
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: db-pass
+      type: Opaque
+      stringData:
+        # -- If using plain text you can provide the password here
+        pass.txt: "{{ .Values.userSettings.dbPassword }}"
+
+# -----------------------------------------------------
+# Core dependencies that should be configured for Flyte to work on any platform
+# Specifically 2 - Storage (s3, gcs etc), Production RDBMS - Aurora, CloudSQL etc
+# ------------------------------------------------------
+#
+# STORAGE SETTINGS
+#
+
+storage:
+  type: custom
+  custom:
+    container: "{{ .Values.userSettings.storageContainerName }}"
+    enable-multicontainer: true
+    connection: {}
+    type: stow
+    stow:
+      kind: azure
+      config:
+        account: "{{ .Values.userSettings.storageAccountName }}"
+    
+db:
+  datacatalog:
+    database:
+      port: 5432
+      username: "{{ .Values.userSettings.dbUser }}"
+      host: "{{ .Values.userSettings.dbHost }}"
+      dbname: "{{ .Values.userSettings.dbName }}"
+      options: sslmode=require
+      passwordPath: /etc/db/pass.txt
+  admin:
+    database:
+      port: 5432
+      username: "{{ .Values.userSettings.dbUser }}"
+      host: "{{ .Values.userSettings.dbHost }}"
+      dbname: "{{ .Values.userSettings.dbName }}"
+      options: sslmode=require
+      passwordPath: /etc/db/pass.txt
+#
+# CONFIGMAPS
+#
+
+configmap:
+  adminServer:
+    server:
+      httpPort: 8088
+      grpc:
+        port: 8089
+      security:
+        secure: false
+        useAuth: false
+        allowCors: true
+        allowedOrigins:
+          - "*"
+        allowedHeaders:
+          - "Content-Type"
+
+  task_resource_defaults:
+    task_resources:
+      defaults:
+        cpu: 500m
+        memory: 500Mi
+        storage: 500Mi
+      limits:
+        storage: 2000Mi
+
+  core:
+    propeller:
+      create-flyteworkflow-crd: true
+      rawoutput-prefix: "abfs://{{ .Values.userSettings.storageContainerName }}/propeller"
+      workers: 40
+      gc-interval: 12h
+      max-workflow-retries: 50
+      kube-client-config:
+        qps: 100
+        burst: 25
+        timeout: 30s
+      queue:
+        sub-queue:
+          type: bucket
+          rate: 100
+          capacity: 1000
+  k8s:
+    plugins:
+      k8s:
+        default-labels:
+          - azure.workload.identity/use: "true"
+        default-env-vars:
+          - AZURE_STORAGE_ACCOUNT_NAME: "{{ .Values.userSettings.storageAccountName }}"
+        default-pod-template-name: "flyte-template" 
+  # -- Resource manager configuration
+  resource_manager:
+    # -- resource manager configuration
+    propeller:
+      resourcemanager:
+        type: noop
+        # Note: By default resource manager is disable for propeller, Please use `type: redis` to enaable
+        # type: redis
+        # resourceMaxQuota: 10000
+        # redis:
+        #   hostPath: "{{ .Values.userSettings.redisHostUrl }}"
+        #   hostKey: "{{ .Values.userSettings.redisHostKey }}"
+
+  enabled_plugins:
+    # -- Tasks specific configuration [structure](https://pkg.go.dev/github.com/flyteorg/flytepropeller/pkg/controller/nodes/task/config#GetConfig)
+    tasks:
+      # -- Plugins configuration, [structure](https://pkg.go.dev/github.com/flyteorg/flytepropeller/pkg/controller/nodes/task/config#TaskPluginConfig)
+      task-plugins:
+        # -- [Enabled Plugins](https://pkg.go.dev/github.com/lyft/flyteplugins/go/tasks/config#Config). Enable sagemaker*, athena if you install the backend
+        # plugins
+        enabled-plugins:
+          - container
+          - sidecar
+          - k8s-array
+        default-for-task-types:
+          container: container
+          sidecar: sidecar
+          container_array: k8s-array
+
+
+  # -- Section that configures how the Task logs are displayed on the UI. This has to be changed based on your actual logging provider.
+  # Refer to [structure](https://pkg.go.dev/github.com/lyft/flyteplugins/go/tasks/logs#LogConfig) to understand how to configure various
+  # logging engines
+  task_logs:
+    plugins: {}
+# ----------------------------------------------------------------
+# Optional Modules
+# Flyte built extensions that enable various additional features in Flyte.
+# All these features are optional, but are critical to run certain features
+# ------------------------------------------------------------------------
+
+# -- # Flyte uses a cloud hosted Cron scheduler to run workflows on a schedule. The following module is optional. Without,
+# this module, you will not have scheduled launchplans/workflows.
+# by default aws use flyte native scheduler i.e flytescheduler
+# To use aws native scheduler please override the eks values
+workflow_scheduler:
+  enabled: true
+  type: native
+
+# --
+# Workflow notifications module is an optional dependency. Flyte uses cloud native pub-sub systems to notify users of
+# various events in their workflows
+workflow_notifications:
+  enabled: false
+
+
+# -- Configuration for the Cluster resource manager component. This is an optional component, that enables automatic
+# cluster configuration. This is useful to set default quotas, manage namespaces etc that map to a project/domain
+cluster_resource_manager:
+  # -- Enables the Cluster resource manager component
+  enabled: true
+  # -- Starts the cluster resource manager in standalone mode with requisite auth credentials to call flyteadmin service endpoints
+  standalone_deploy: false
+  config:
+    cluster_resources:
+      customData:
+        - development:
+            - WIClientId:
+                value: "{{ .Values.userSettings.tasksWIClientId }}"
+        - staging:
+            - WIClientId:
+                value: "{{ .Values.userSettings.tasksWIClientId }}"
+        - production:
+            - WIClientId:
+                value: "{{ .Values.userSettings.tasksWIClientId }}"
+
+  templates:
+    # -- Template for namespaces resources
+    - key: aa_namespace
+      value: |
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: {{ namespace }}
+        spec:
+          finalizers:
+          - kubernetes
+
+    # -- Patch default service account
+    - key: aab_default_service_account
+      value: |
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+          name: default
+          namespace: {{ namespace }}
+          annotations: 
+            azure.workload.identity/client-id: {{ WIClientId }}
+
