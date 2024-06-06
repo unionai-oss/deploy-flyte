@@ -3,14 +3,9 @@ locals {
   environment        = "deployment"
   tenant             = "mytenant"
   location           = "eastus" #Azure region or zone
-  subscription_id    = "8c8589f3-42da-4083-be83-ff9b12412edd"
-  tenant_id          = "35356303-ece0-4649-85bb-c8a9c67fd341"
+  subscription_id    = "<MY_SUBSCRIPTION_ID>"
+  tenant_id          = "<MY_TENANT_ID>"
 
-  gpu_node_pool_count          = 1
-  gpu_machine_type             = "Standard_NC6s_v3"
-  gpu_node_pool_disk_size      = 100
-  gpu_node_pool_max_count      = 3
-  gpu_node_pool_min_count      = 1
   #You must replace this email address with your own.
   # Let's Encrypt will use this to contact you about expiring
   # certificates, and issues related to your account.

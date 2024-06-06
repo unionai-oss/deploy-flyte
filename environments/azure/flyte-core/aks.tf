@@ -1,5 +1,15 @@
 data "azurerm_subscription" "current" {}
 
+#Use the following keys to configure a GPU node pool as part of the AKs cluster
+#gpu_node_pool_count = 0 disables the provisioning of the node pool and the GPU-related prerequisites.
+locals {
+  gpu_node_pool_count          = 0
+  gpu_machine_type             = "Standard_NC6s_v3"
+  gpu_node_pool_disk_size      = 100
+  gpu_node_pool_max_count      = 3
+  gpu_node_pool_min_count      = 1
+}
+
 resource "azurerm_kubernetes_cluster" "flyte" {
   name                = "${local.tenant}-${local.environment}-flytetf"
   location            = azurerm_resource_group.flyte.location
@@ -26,7 +36,7 @@ identity {
   }
 }
 
-
+# Additional pre-requisites for GPU scheduling
 resource "azurerm_kubernetes_cluster_node_pool" "gpu_nodes" {
 count = local.gpu_node_pool_count == 0 ? 0 : 1
 depends_on = [ azurerm_kubernetes_cluster.flyte ]
@@ -40,20 +50,20 @@ vm_size             = local.gpu_machine_type
 os_disk_size_gb    = local.gpu_node_pool_disk_size
 }
 
-resource "kubernetes_namespace_v1" "gpu-operator" {
-  count = local.gpu_node_pool_count == 0 ? 0 : 1
-  metadata {
-    annotations = {
-      name = "gpu-operator"
-    }
-
-    labels = {
-      cluster    = azurerm_kubernetes_cluster.flyte.name
-      managed_by = "Terraform"
-    }
-
-    name = "gpu-operator"
-  }
+resource "kubectl_manifest" "gpu-operator-ns"{
+ count = local.gpu_node_pool_count == 0 ? 0 : 1 
+  yaml_body = (<<-YAML
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "gpu-operator"
+  labels:
+    cluster: ${azurerm_kubernetes_cluster.flyte.name}
+    managed_by: "Terraform"  
+  annotations:
+    name: "gpu-operator"
+    YAML
+     )
 }
 
 /***************************
@@ -61,11 +71,10 @@ GPU Operator Configuration
 ***************************/
 resource "helm_release" "gpu-operator" {
   count = local.gpu_node_pool_count == 0 ? 0 : 1
-  depends_on       = [azurerm_kubernetes_cluster_node_pool.gpu_nodes, kubernetes_namespace_v1.gpu-operator]
+  depends_on       = [azurerm_kubernetes_cluster_node_pool.gpu_nodes, kubectl_manifest.gpu-operator-ns]
   name             = "gpu-operator"
   repository       = "https://helm.ngc.nvidia.com/nvidia"
   chart            = "gpu-operator"
-  #version          = var.nvaie ? var.nvaie_gpu_operator_version : var.gpu_operator_version
   namespace        = "gpu-operator"
   create_namespace = false
   atomic           = true
