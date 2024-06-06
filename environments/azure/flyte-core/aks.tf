@@ -34,6 +34,9 @@ identity {
   lifecycle {
     ignore_changes = [default_node_pool]
   }
+  provisioner "local-exec" {
+     command = "az aks get-credentials --resource-group ${azurerm_resource_group.flyte.name} --name ${azurerm_kubernetes_cluster.flyte.name} --overwrite-existing"
+   }
 }
 
 # Additional pre-requisites for GPU scheduling

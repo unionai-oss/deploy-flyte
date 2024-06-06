@@ -86,7 +86,7 @@ admin:
 
 3. Save the following "hello world" workflow definition:
 ```bash
-cat <<< 'EOF' >hello_world.py
+cat << 'EOF' >hello_world.py
 from flytekit import task, workflow
 @task
 def say_hello() -> str:
@@ -117,3 +117,11 @@ Running Execution on Remote.
 You have a fully working Flyte environment on Azure.
 
 From this point on, you can continue your learning journey by going through the [Flyte Fundamentals](https://docs.flyte.org/en/latest/flyte_fundamentals/index.html) tutorials.
+
+## How to tear down your deployment
+
+1. Once you're finished testing/using Flyte, just invoke the following command:
+
+```bash
+terraform destroy
+```

@@ -5,7 +5,7 @@ terraform {
       source  = "hashicorp/azurerm"
       version = ">=3.13.0"
     }
-     kubectl = {
+    kubectl = {
       source  = "gavinbunney/kubectl"
       version = ">= 1.14.0"
     }
@@ -14,11 +14,6 @@ terraform {
   backend "azurerm" {}
 }
 
-provider "kubernetes" {
-  host                   = azurerm_kubernetes_cluster.flyte.kube_config.0.host
-  token                  = yamldecode(azurerm_kubernetes_cluster.flyte.kube_config_raw).users[0].user.token
-  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.flyte.kube_config.0.cluster_ca_certificate)
-}
 provider "kubectl" {
   host                   = azurerm_kubernetes_cluster.flyte.kube_config.0.host
   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.flyte.kube_config.0.cluster_ca_certificate)
@@ -28,11 +23,11 @@ provider "kubectl" {
 provider "azurerm" {
   features {}
 
-  subscription_id = local.subscription_id
-  tenant_id       = local.tenant_id
-  storage_use_azuread = true
+  subscription_id           = local.subscription_id
+  tenant_id                 = local.tenant_id
   use_aks_workload_identity = true
- # use_cli                   = false
+  storage_use_azuread       = true
+
 }
 
 provider "helm" {
@@ -41,6 +36,6 @@ provider "helm" {
     client_certificate     = base64decode(azurerm_kubernetes_cluster.flyte.kube_config.0.client_certificate)
     client_key             = base64decode(azurerm_kubernetes_cluster.flyte.kube_config.0.client_key)
     cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.flyte.kube_config.0.cluster_ca_certificate)
-    config_path = "~/.kube/config"
+    config_path            = "~/.kube/config"
   }
 }

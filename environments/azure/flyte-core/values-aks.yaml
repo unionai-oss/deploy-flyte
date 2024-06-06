@@ -173,7 +173,6 @@ storage:
       kind: azure
       config:
         account: "{{ .Values.userSettings.storageAccountName }}"
-      #key: "{{ .Values.userSettings.storageAccountKey }}" #Hopefully we'll switch this to proper IAM
     
 db:
   datacatalog:
