@@ -5,13 +5,8 @@ resource "helm_release" "flyte-core" {
   create_namespace = true
   repository       = "https://flyteorg.github.io/flyte"
   chart            = "flyte-core"
-<<<<<<< HEAD
-  timeout          = "1200"
-  
-=======
   timeout          = "600"
 
->>>>>>> 5de75a2 (Add GPU prereqs)
   values = [templatefile("values-aks.yaml", {
     cosmos_postgres_user           = "flyte"
     cosmos_postgres_password       = random_password.postgres.result
