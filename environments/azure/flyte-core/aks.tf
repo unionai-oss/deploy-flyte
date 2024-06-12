@@ -5,6 +5,7 @@ data "azurerm_subscription" "current" {}
 locals {
   gpu_node_pool_count          = 0
   gpu_machine_type             = "Standard_NC6s_v3"
+  accelerator                  = "nvidia-tesla-v100" #Supported options: https://github.com/flyteorg/flytekit/blob/daeff3f5f0f36a1a9a1f86c5e024d1b76cdfd5cb/flytekit/extras/accelerators.py#L132-L160
   gpu_node_pool_disk_size      = 100
   gpu_node_pool_max_count      = 3
   gpu_node_pool_min_count      = 1
@@ -51,6 +52,14 @@ min_count           = local.gpu_node_pool_min_count
 max_count           = local.gpu_node_pool_max_count
 vm_size             = local.gpu_machine_type
 os_disk_size_gb    = local.gpu_node_pool_disk_size
+
+#Only used in case you request specific accelerators. Additional configuration may be required.
+# Learn more: https://docs.flyte.org/en/latest/user_guide/productionizing/configuring_access_to_gpus.html
+node_labels = {
+  "nvidia.com/gpu.device": "${local.accelerator}" 
+}
+#The matching toleration is automatically inserted by flytepropeller when you request a GPU (Requests=Resources(gpu=1))
+node_taints = ["nvidia.com/gpu:NoSchedule"]
 }
 
 resource "kubectl_manifest" "gpu-operator-ns"{

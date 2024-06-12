@@ -242,7 +242,10 @@ configmap:
           - azure.workload.identity/use: "true"
         default-env-vars:
           - AZURE_STORAGE_ACCOUNT_NAME: "{{ .Values.userSettings.storageAccountName }}"
-        default-pod-template-name: "flyte-template" 
+  # Uncomment this line if you plan to request specific accelerator models
+  # Go to https://docs.flyte.org/en/latest/api/flytekit/extras.accelerators.html to learn more      
+        #gpu-device-node-label: "nvidia.com/gpu.device"
+        
   # -- Resource manager configuration
   resource_manager:
     # -- resource manager configuration
