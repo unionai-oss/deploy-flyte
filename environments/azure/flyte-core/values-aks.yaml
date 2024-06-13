@@ -245,7 +245,8 @@ configmap:
   # Uncomment this line if you plan to request specific accelerator models
   # Go to https://docs.flyte.org/en/latest/api/flytekit/extras.accelerators.html to learn more      
         #gpu-device-node-label: "nvidia.com/gpu.device"
-        
+  # Uncomment this line and configure the value to be able to request partitions from MIG-enabled devices      
+        #gpu-partition-size-node-label: "nvidia.com/gpu.partition-size"
   # -- Resource manager configuration
   resource_manager:
     # -- resource manager configuration
