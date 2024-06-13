@@ -20,11 +20,6 @@ resource "helm_release" "flyte-core" {
     }
     )
   ]
-<<<<<<< HEAD
   depends_on = [azurerm_postgresql_flexible_server_firewall_rule.all, azurerm_postgresql_flexible_server_database.flyte, azurerm_role_assignment.backend_role_assignment, azurerm_kubernetes_cluster.flyte, azurerm_federated_identity_credential.flyte_backend_federated_identity]
 
-=======
-  depends_on = [azurerm_postgresql_flexible_server_firewall_rule.all, azurerm_postgresql_flexible_server_database.flyte, azurerm_role_assignment.backend_role_assignment]
-  
->>>>>>> 03f12d1 (Add GPU node pool provisioning)
 }
