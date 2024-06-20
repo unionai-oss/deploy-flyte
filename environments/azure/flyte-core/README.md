@@ -124,35 +124,54 @@ To be able to request GPUs on Azure directly from your Flyte tasks, you have two
 
 ### 1. Request a generic GPU device
 
-- a. Go to `aks.tf` and switch the `locals.gpu_node_pool_count` value to the number of GPU-enabled nodes you need in your AKS node pool.  
-- b. Run a `terraform plan` + `terraform apply` operation.  
-- c. Save the following test workflow:
-```bash
-cat << 'EOF' >hello_gpu.py
-import torch
-from flytekit import task,Resources
+- Go to `aks.tf` and switch the `locals.gpu_node_pool_count` value to the number of GPU-enabled nodes you need in your AKS node pool.  
+- Run a `terraform plan` + `terraform apply` operation.  
+- Save the following test workflow:
+```python
+from flytekit import ImageSpec, Resources, task
 
-@task(requests=Resources( gpu="1"))
-def gpu_available() -> bool:
-   return torch.cuda.is_available()
-EOF
+image = ImageSpec(
+    base_image= "ghcr.io/flyteorg/flytekit:py3.10-1.10.2",
+     name="pytorch",
+     python_version="3.10",
+     packages=["torch"],
+     builder="envd",
+     registry="<YOUR_CONTAINER_REGISTRY>",
+ )
+# This is the image from the above image spec
+image = "<YOUR_IMAGE_REPO:TAG>"
+
+@task(container_image=image, requests=Resources(gpu="1"))
+def check_torch() -> bool:
+    import torch
+    return torch.cuda.is_available()
+
 ```
-- d. Execute it remotely on your Flyte cluster:
+- Execute it remotely on your Flyte cluster:
 ```bash
 pyflyte run --remote hello_gpu.py gpu_available
 ```
 It should return a `True` value.
 
 ### 2. Request a specific accelerator
-- a. Go to `values-aks.yaml` and uncomment the key `gpu-device-node-label` under `configmap.k8s.plugins.k8s`. This is an arbitrary label that is applied as a `nodeAffinity` to Pods spawned from Tasks that request a specific accelerator.  
-- b. Go to `aks.tf` and confirm or change the `locals.accelerator` value to the GPU device model that you plan to use. Make sure to check the [supported options](https://github.com/flyteorg/flytekit/blob/daeff3f5f0f36a1a9a1f86c5e024d1b76cdfd5cb/flytekit/extras/accelerators.py#L132-L160).  
-- c. Run a `terraform plan` + `terraform apply` operation   
-- d. Save and execute the following test workflow, changing the GPU device model to match your environment (example with a V100):
-```bash
-cat << 'EOF' >hello_specific_gpu.py
-import torch
-from flytekit import task,Resources
+- Go to `values-aks.yaml` and uncomment the key `gpu-device-node-label` under `configmap.k8s.plugins.k8s`. This is an arbitrary label that is applied as a `nodeAffinity` to Pods spawned from Tasks that request a specific accelerator.  
+- Go to `aks.tf` and confirm or change the `locals.accelerator` value to the GPU device model that you plan to use. Make sure to check the [supported options](https://github.com/flyteorg/flytekit/blob/daeff3f5f0f36a1a9a1f86c5e024d1b76cdfd5cb/flytekit/extras/accelerators.py#L132-L160).  
+- Run a `terraform plan` + `terraform apply` operation   
+- Save and execute the following test workflow, changing the GPU device model to match your environment (example with a V100):
+```python
+from flytekit import ImageSpec, Resources, task
 from flytekit.extras.accelerators import V100
+
+image = ImageSpec(
+    base_image= "ghcr.io/flyteorg/flytekit:py3.10-1.10.2",
+     name="pytorch",
+     python_version="3.10",
+     packages=["torch"],
+     builder="envd",
+     registry="<YOUR_CONTAINER_REGISTRY>",
+ )
+# This is the image from the above image spec
+image = "<YOUR_IMAGE_REPO:TAG>"
 
 @task(requests=Resources( gpu="1"),
               accelerator=V100,
@@ -163,17 +182,26 @@ def gpu_available() -> bool:
 > Learn more about [accelerators in flytekit](https://docs.flyte.org/en/latest/api/flytekit/extras.accelerators.html)
 
 ### 3. Request a GPU partition
-- a. Go to `values-aks.yaml` and uncomment the `gpu-partition-size-node-label` key under `configmap.k8s.plugins.k8s`. This label should already be applied to the AKS nodes in the GPU-enabled node pool. Flyte will inject a matching `nodeAffinity` config to the Pods that execute Tasks where the user requested a partition.  
-- b. Go to `aks.tf` and adjust the value of the `locals.partition_size` key to your desired GPU partition size. 
+-  Go to `values-aks.yaml` and uncomment the `gpu-partition-size-node-label` key under `configmap.k8s.plugins.k8s`. This label should already be applied to the AKS nodes in the GPU-enabled node pool. Flyte will inject a matching `nodeAffinity` config to the Pods that execute Tasks where the user requested a partition.  
+- Go to `aks.tf` and adjust the value of the `locals.partition_size` key to your desired GPU partition size. 
 > Learn more about the [supported partition profiles for NVIDIA A100 devices](https://developer.nvidia.com/blog/getting-the-most-out-of-the-a100-gpu-with-multi-instance-gpu/#mig_partitioning_and_gpu_instance_profiles)
 
-- c. Run a `terraform plan` + `terraform apply` operation
-- d. Save and execute the following test workflow, changing the GPU partition size to match your needs:
-```bash
-cat << 'EOF' >hello_specific_gpu.py
-import torch
-from flytekit import task,Resources
+- Run a `terraform plan` + `terraform apply` operation
+- Save and execute the following test workflow, changing the GPU partition size to match your needs:
+```python
+from flytekit import ImageSpec, Resources, task
 from flytekit.extras.accelerators import A100
+
+image = ImageSpec(
+    base_image= "ghcr.io/flyteorg/flytekit:py3.10-1.10.2",
+     name="pytorch",
+     python_version="3.10",
+     packages=["torch"],
+     builder="envd",
+     registry="<YOUR_CONTAINER_REGISTRY>",
+ )
+# This is the image from the above image spec
+image = "<YOUR_IMAGE_REPO:TAG>"
 
 @task(requests=Resources( gpu="1"),
               accelerator=A100.partition_2g_10gb,
