@@ -120,7 +120,7 @@ From this point on, you can continue your learning journey by going through the 
 
 ## Consuming GPU accelerators
 
-To be able to request GPUs on Azure directly from your Flyte tasks, you have two main options. This section covers both and how to use them with the Terraform/OpenTofu modules:
+To be able to request GPUs on Azure directly from your Flyte tasks, you have multiple options. This section covers how to use some of them with the Terraform/OpenTofu modules:
 
 ### 1. Request a generic GPU device
 
@@ -138,8 +138,6 @@ image = ImageSpec(
      builder="envd",
      registry="<YOUR_CONTAINER_REGISTRY>",
  )
-# This is the image from the above image spec
-image = "<YOUR_IMAGE_REPO:TAG>"
 
 @task(container_image=image, requests=Resources(gpu="1"))
 def check_torch() -> bool:
@@ -170,8 +168,6 @@ image = ImageSpec(
      builder="envd",
      registry="<YOUR_CONTAINER_REGISTRY>",
  )
-# This is the image from the above image spec
-image = "<YOUR_IMAGE_REPO:TAG>"
 
 @task(requests=Resources( gpu="1"),
               accelerator=V100,
@@ -200,8 +196,6 @@ image = ImageSpec(
      builder="envd",
      registry="<YOUR_CONTAINER_REGISTRY>",
  )
-# This is the image from the above image spec
-image = "<YOUR_IMAGE_REPO:TAG>"
 
 @task(requests=Resources( gpu="1"),
               accelerator=A100.partition_2g_10gb,
