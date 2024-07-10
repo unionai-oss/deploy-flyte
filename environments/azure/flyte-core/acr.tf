@@ -20,4 +20,6 @@ resource "azurerm_role_assignment" "current_user_role_acr_push" {
   scope                = azurerm_container_registry.acr.id
   role_definition_name = "AcrPush"
   principal_id         = data.azurerm_client_config.user.object_id
+
+  depends_on = [ azurerm_container_registry.acr ]
 }
