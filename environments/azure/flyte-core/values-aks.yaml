@@ -243,10 +243,17 @@ configmap:
           - azure.workload.identity/use: "true"
         default-env-vars:
           - AZURE_STORAGE_ACCOUNT_NAME: "{{ .Values.userSettings.storageAccountName }}"
-  
   # Go to https://docs.flyte.org/en/latest/api/flytekit/extras.accelerators.html to learn more      
         gpu-device-node-label: "nvidia.com/gpu.accelerator"
         gpu-partition-size-node-label: "nvidia.com/gpu.partition-size"
+#---Uncomment and configure to match with additional taints that you have configured on the aks.tf module        
+#       resource-tolerations:
+#       - nvidia.com/gpu:
+#         - key: "key1"
+#          operator: "Equal"
+#          value: "value1"
+#          effect: "NoSchedule"
+
   # -- Resource manager configuration
   resource_manager:
     # -- resource manager configuration
