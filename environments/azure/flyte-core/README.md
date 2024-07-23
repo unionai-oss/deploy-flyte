@@ -120,7 +120,9 @@ From this point on, you can continue your learning journey by going through the 
 
 ## Consuming GPU accelerators
 
-To be able to request GPUs on Azure directly from your Flyte tasks, you have multiple options. This section covers how to use some of them with the Terraform/OpenTofu modules:
+To be able to request GPUs on Azure directly from your Flyte tasks, you have multiple options. This section covers how to use some of them with the Terraform/OpenTofu modules.
+
+>The examples in this section use [ImageSpec](https://docs.flyte.org/en/latest/user_guide/customizing_dependencies/imagespec.html#imagespec), a Flyte feature that builds a custom container image without a Dockerfile. Install it using `pip install flytekitplugins-envd`.\
 
 ### 1. Request a generic GPU device
 
@@ -204,7 +206,7 @@ def gpu_available() -> bool:
    return torch.cuda.is_available()
 ``` 
 
-
+Learn more about GPU configuration in the [Flyte docs](https://docs.flyte.org/en/latest/user_guide/productionizing/configuring_access_to_gpus.html#configure-gpus).
 
 ## How to tear down your deployment
 
