@@ -1,6 +1,15 @@
 # Introduction
 
-The modules in this repo have been tested with Terraform and OpenTofu, and will help you deploy a production-grade Flyte instance on Microsoft Azure. 
+The modules in this repo have been tested with Terraform and OpenTofu, and will help you deploy a production-grade Flyte instance on Microsoft Azure including:
+
+- AKS cluster
+- Azure Database for Postgres - Flexible Server
+- Azure blob storage container
+- Support for Workload Identity Federation with Entra ID
+- NGINX Ingress controller
+- cert-manager for TLS
+- Azure Container Registry
+- (Optional) AKS GPU-powered node pool
 
 # Prerequisites
 
