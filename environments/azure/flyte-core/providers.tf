@@ -23,8 +23,8 @@ provider "kubectl" {
 provider "azurerm" {
   features {}
 
-  subscription_id           = local.subscription_id
-  tenant_id                 = local.tenant_id
+  subscription_id           = var.subscription_id
+  tenant_id                 = var.tenant_id
   use_aks_workload_identity = true
   storage_use_azuread       = true
 
