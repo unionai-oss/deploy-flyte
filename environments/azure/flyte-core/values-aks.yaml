@@ -134,7 +134,8 @@ common:
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
       kubernetes.io/ingress.class: nginx
       cert-manager.io/cluster-issuer: letsencrypt-production
-     # nginx.ingress.kubernetes.io/proxy-buffer-size: "132k"
+      nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
+      nginx.ingress.kubernetes.io/proxy-buffers: "4"
     separateGrpcIngressAnnotations:
       nginx.ingress.kubernetes.io/backend-protocol: GRPC
   databaseSecret:
@@ -203,13 +204,13 @@ configmap:
         port: 8089
       security:
         secure: false
-        useAuth: false
+        useAuth: false 
         allowCors: true
         allowedOrigins:
           - "*"
         allowedHeaders:
           - "Content-Type"
-
+    
   task_resource_defaults:
     task_resources:
       defaults:
@@ -242,7 +243,17 @@ configmap:
           - azure.workload.identity/use: "true"
         default-env-vars:
           - AZURE_STORAGE_ACCOUNT_NAME: "{{ .Values.userSettings.storageAccountName }}"
-        default-pod-template-name: "flyte-template" 
+  # Go to https://docs.flyte.org/en/latest/api/flytekit/extras.accelerators.html to learn more      
+        gpu-device-node-label: "nvidia.com/gpu.accelerator"
+        gpu-partition-size-node-label: "nvidia.com/gpu.partition-size"
+#---Uncomment and configure to match with additional taints that you have configured on the aks.tf module        
+#       resource-tolerations:
+#       - nvidia.com/gpu:
+#         - key: "key1"
+#          operator: "Equal"
+#          value: "value1"
+#          effect: "NoSchedule"
+
   # -- Resource manager configuration
   resource_manager:
     # -- resource manager configuration
