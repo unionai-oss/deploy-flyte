@@ -26,10 +26,10 @@ terraform {
   }
 
   backend "s3" {
-    profile = "<My-AWS-profile>" #AWS CLI profile name
-    bucket  = "<my-tf-state-bucket>" #create an S3 bucket to store Terraform state
+    profile =  var.aws_cli_profile #AWS CLI profile name
+    bucket  = var.tfstate_s3_bucket #create an S3 bucket to store Terraform state
     key     = "terraform.tfstate"
-    region  = "us-east-1" #AWS region where the bucket was created
+    region  = var.aws_region #AWS region where the bucket was created
   }
 
 

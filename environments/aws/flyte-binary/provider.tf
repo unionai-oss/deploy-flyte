@@ -1,6 +1,6 @@
 provider "aws" {
-  region  = "us-west-1" #change to your preferred AWS region
-  profile = "<My-AWS-profile" # AWS CLI profile name
+  region  = var.aws_region #change to your preferred AWS region
+  profile = var.aws_cli_profile # AWS CLI profile name
 }
 
 provider "helm" {
