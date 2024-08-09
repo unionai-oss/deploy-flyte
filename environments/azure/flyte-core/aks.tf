@@ -5,7 +5,7 @@ data "azurerm_subscription" "current" {}
 #gpu_node_pool_count = 0 disables the provisioning of the node pool and the GPU-related prerequisites.
 locals {
   gpu_settings = {
-  gpu_node_pool_count          = 1
+  gpu_node_pool_count          = 0
   gpu_machine_type             = "Standard_NC24ads_A100_v4" #Change it to the GPU-powered instance type you're using
   accelerator                  = "nvidia-tesla-a100" #Supported options: https://github.com/flyteorg/flytekit/blob/daeff3f5f0f36a1a9a1f86c5e024d1b76cdfd5cb/flytekit/extras/accelerators.py#L132-L160 - Change to "None" if don't plan to request specific accelerator models.
   partition_size               = "2g.10gb" #Only for MIG-enabled devices. Change to "None" for unpartiiooned devices.Learn more: https://developer.nvidia.com/blog/getting-the-most-out-of-the-a100-gpu-with-multi-instance-gpu/#mig_partitioning_and_gpu_instance_profiles
