@@ -26,7 +26,7 @@ resource "aws_iam_policy" "flyte_binary_iam_policy" {
   policy = data.aws_iam_policy_document.flyte_binary_iam_policy.json
 }
 
-module "flyte_binary_irsa_role" {
+module "flyte_backend_irsa_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "5.11.2"
 
@@ -73,10 +73,3 @@ module "flyte_worker_irsa_role" {
 }
 
 
-output "flyte_binary_irsa_role" {
-  value = module.flyte_binary_irsa_role.iam_role_arn
-}
-
-output "flyte_worker_irsa_role" {
-  value = module.flyte_worker_irsa_role.iam_role_arn
-}

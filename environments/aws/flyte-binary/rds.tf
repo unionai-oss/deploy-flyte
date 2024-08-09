@@ -14,8 +14,8 @@ module "flyte_db" {
   subnets             = module.vpc.database_subnets
   vpc_id              = module.vpc.vpc_id
 
-  database_name          = "flyteadmin"
-  master_username        = "flyteadmin"
+  database_name          = "flyte"
+  master_username        = "flyte"
   
 #Comment to disable random password generation for the DB
   random_password_length = 63
