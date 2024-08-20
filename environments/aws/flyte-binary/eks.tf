@@ -138,8 +138,11 @@ module "eks" {
             effect = "NO_SCHEDULE"
           }
         ]
+        
     }
+    
   }
+  
 }
 
 resource "aws_autoscaling_group_tag" "eks_managed_node_group_asg_tag" {

@@ -1,19 +1,4 @@
 
-
-
-resource "aws_route53_record" "cname_record" {
-  zone_id = data.aws_route53_zone.zone.zone_id
-  name    = data.aws_route53_zone.zone.name  # Replace with your desired subdomain
-  type    = "CNAME"
-  ttl     = 300  # Time to Live in seconds
-
-  records = ["change-me.example"] #Once Flyte is deployed, you can change this with the ALB
-
-  allow_overwrite = true
-
-
-}
-# Change domain_name to match the name you'll use to connect to Flyte
 resource "aws_acm_certificate" "flyte_cert" {
   domain_name       = "flyte.${data.aws_route53_zone.zone.name}"
   validation_method = "DNS"
@@ -22,6 +7,38 @@ resource "aws_acm_certificate" "flyte_cert" {
     create_before_destroy = true
   }
 }
+
+resource "aws_route53_record" "cert_validation" {
+  name    = "${aws_acm_certificate.flyte_cert.domain_validation_options.0.resource_record_name}"
+  type    = "${aws_acm_certificate.flyte_cert.domain_validation_options.0.resource_record_type}"
+  zone_id = "${data.aws_route53_zone.zone.zone_id}"
+  records = ["${aws_acm_certificate.flyte_cert.domain_validation_options.0.resource_record_value}"]
+  ttl     = 60
+}
+
+resource "aws_acm_certificate_validation" "dns_validated_cert" {
+  certificate_arn         = "${aws_acm_certificate.flyte_cert.arn}"
+  validation_record_fqdns = ["${aws_route53_record.cert_validation.fqdn}"]
+}
+
+resource "aws_route53_record" "elb_record" {
+
+  provisioner "kubectl-get-ingress" {
+    command = "export FLYTE_ELB_ADDRESS=$(kubectl get ingress -n flyte -o json | jq -r '.items[].status.loadBalancer.ingress[].ip')"
+  }
+  zone_id = data.aws_route53_zone.zone.zone_id
+  name    = local.domain_name  # Replace with your desired subdomain
+  type    = "A"
+  ttl     = 300  # Time to Live in seconds
+
+  records = ["127.0.0.1"] #Once Flyte is deployed, you can change this with the ALB
+
+  allow_overwrite = true
+
+depends_on = [ module.eks, helm_release.flyte-core ]
+}
+# Change domain_name to match the name you'll use to connect to Flyte
+
 
 module "external_dns_irsa_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
