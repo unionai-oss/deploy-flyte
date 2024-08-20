@@ -1,6 +1,6 @@
 
 resource "aws_acm_certificate" "flyte_cert" {
-  domain_name       = "flyte.${data.aws_route53_zone.zone.name}"
+  domain_name       = local.domain_name
   validation_method = "DNS"
 
   lifecycle {
@@ -30,17 +30,23 @@ resource "aws_acm_certificate_validation" "dns_validated_cert" {
   validation_record_fqdns = [for record in aws_route53_record.cert_validation_record : record.fqdn]
 }
 
-resource "aws_route53_record" "elb_record" {
+#resource "null_resource" "provisioner" {
+#   provisioner "local-exec" {
+ #   command = "export FLYTE_ELB_HOSTNAME=$(kubectl get ingress -n flyte -o json | jq -r '.items[0].status.loadBalancer.ingress[0].hostname')"
+ # }
+#}
 
-  provisioner "local-exec" {
-    command = "export FLYTE_ELB_ADDRESS=$(kubectl get ingress -n flyte -o json | jq -r '.items[].status.loadBalancer.ingress[].ip')"
-  }
+data "external" "flyte_elb_envvar" {
+  program = ["bash", "-c", "export FLYTE_ELB_HOSTNAME=$(kubectl get ingress -n flyte -o json | jq -r '.items[0].status.loadBalancer.ingress[0].hostname')"]
+}
+
+resource "aws_route53_record" "elb_record" {
   zone_id = data.aws_route53_zone.zone.zone_id
   name    = local.domain_name  # Replace with your desired subdomain
-  type    = "A"
+  type    = "CNAME"
   ttl     = 300  # Time to Live in seconds
 
-  records = ["127.0.0.1"] #Once Flyte is deployed, you can change this with the ALB
+  records = ["${data.external.flyte_elb_envvar.result}"] #Once Flyte is deployed, you can change this with the ALB
 
   allow_overwrite = true
 
