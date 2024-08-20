@@ -1,21 +1,21 @@
 userSettings:
-    dbUser: ${rds_postgres_user}
-    dbPassword: ${rds_postgres_password}
-    dbName: ${rds_postgres_database_name} 
-    dbHost: ${rds_postgres_database_host}
-    s3Bucket: ${s3_bucket_name}             
-    backendIAMRole: ${flyte_backend_role_arn}     
-    workerIAMRole: ${flyte_tasks_role_arn} 
-    certicateARN: ${acm_certificate}
-    region: ${aws_region} 
-    ingressHost: ${ingress_host}
+  awsRegion: ${aws_compute_region} 
+  dbUser: ${rds_postgres_user}
+  dbPassword: ${rds_postgres_password}
+  dbName: ${rds_postgres_database_name} 
+  dbHost: ${rds_postgres_database_host}
+  s3Bucket: ${bucket_name}             
+  backendIAMRole: ${flyte_backend_role_arn}     
+  workerIAMRole: ${flyte_tasks_role_arn} 
+  certicateARN: ${acm_certificate}
+  ingressHost: ${ingress_host}
 
 configuration:
   database:
-    username: "{{ .Values.userSettings.dbUser }}"
+    username: "flyte"
     password: "{{ .Values.userSettings.dbPassword }}"
     host: "{{ .Values.userSettings.dbHost }}"
-    dbname: "{{ .Values.userSettings.dbName }}"
+    dbname: "flyte"
   storage:
     #Learn more about how Flyte handles data: https://docs.flyte.org/en/latest/concepts/data_management.html
     metadataContainer: "{{ .Values.userSettings.s3Bucket }}"
@@ -23,7 +23,7 @@ configuration:
     provider: s3
     providerConfig:
       s3:
-        region: "{{ .Values.userSettings.region }}"
+        region: "{{ .Values.userSettings.awsRegion }}"
         authType: "iam"
   #For logging to work, you need to setup an agent. 
   # Learn more: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Container-Insights-EKS-logs.html
@@ -53,13 +53,13 @@ configuration:
       customData:
       - production:
         - defaultIamRole:
-            value: "{{ .Values.userSettings.workerIAMRole }}"
+            value: "{{.Values.userSettings.workerIAMRole }}"
       - staging:
         - defaultIamRole:
-            value: "{{ .Values.userSettings.workerIAMRole }}"
+            value: "{{.Values.userSettings.workerIAMRole }}"
       - development:
         - defaultIamRole:
-            value: "{{ .Values.userSettings.workerIAMRole }}"
+            value: "{{.Values.userSettings.workerIAMRole }}"
     flyteadmin:
       roleNameKey: "iam.amazonaws.com/role"
     plugins:
@@ -114,7 +114,7 @@ ingress:
     alb.ingress.kubernetes.io/actions.app-root: '{"Type": "redirect", "RedirectConfig": {"Path": "/console", "StatusCode": "HTTP_302"}}'
   grpcAnnotations:
     alb.ingress.kubernetes.io/backend-protocol-version: GRPC 
-  host: "{{ .Values.userSettings.ingressHost }}"
+  host: "{{.Values.userSettings.ingressHost }}"
 serviceAccount:
   create: true
   annotations:

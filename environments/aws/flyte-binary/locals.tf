@@ -12,5 +12,5 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 data "aws_route53_zone" "zone" {
-  name = "fthwdemo.run"  # Change this to your Route53 managed zone
+  name = "fthwdemo.com"  # Change this to your Route53 managed zone
 }
