@@ -4,7 +4,7 @@ module "flyte_db" {
 
   name           = "${local.name_prefix}-db"
   engine         = "aurora-postgresql"
-  engine_version = "14.6"
+  engine_version = "14.9"
   instance_class = "db.t3.medium"
   instances = {
     0 = {}
