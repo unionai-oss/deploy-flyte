@@ -22,18 +22,4 @@ module "flyte_db" {
 
 #Uncomment and update the value to set a specific password for the DB.
   #master_password = "my-db-password"
-  
- 
-
- 
-}
-
-output "cluster_master_password" {
-  value       = module.flyte_db.cluster_master_password
-  sensitive   = true
-}
-
-output "cluster_endpoint" {
-  value = module.flyte_db.cluster_endpoint
-  sensitive = false
 }

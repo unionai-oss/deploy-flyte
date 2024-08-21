@@ -28,10 +28,6 @@ provisioner "local-exec" {
 }
 
 
-output "s3bucket" {
-   value= module.flyte_data.s3_bucket_id
-  
-}
-output "region" {
- value=var.aws_region 
+output "flyte_endpoint" {
+   value= local.domain_name
 }
