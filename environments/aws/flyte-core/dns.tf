@@ -34,7 +34,7 @@ resource "null_resource" "elb_envvar" {
    provisioner "local-exec" {
     command = "export TF_VAR_flyte_elb_hostname=$(kubectl get ingress -n flyte -o json | jq -r '.items[0].status.loadBalancer.ingress[0].hostname')"
   }
-  depends_on = [ aws_acm_certificate_validation.dns_validated_cert ]
+  depends_on = [ aws_acm_certificate_validation.dns_validated_cert, helm_release.flyte-core ]
 }
 
 variable "flyte_elb_hostname" {

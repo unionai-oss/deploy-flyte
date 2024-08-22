@@ -24,6 +24,7 @@ resource "helm_release" "flyte-core" {
   depends_on = [module.eks,module.flyte_db,module.flyte_worker_irsa_role,module.flyte_backend_irsa_role, aws_acm_certificate_validation.dns_validated_cert]
 provisioner "local-exec" {
     command = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name} --profile ${var.aws_cli_profile}"
+    
   }
 }
 
