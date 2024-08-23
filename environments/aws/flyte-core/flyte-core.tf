@@ -26,6 +26,10 @@ provisioner "local-exec" {
     command = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name} --profile ${var.aws_cli_profile}"
     
   }
+
+provisioner "local-exec" {
+    command = "./scripts/get_elb.sh"
+    }
 }
 
 

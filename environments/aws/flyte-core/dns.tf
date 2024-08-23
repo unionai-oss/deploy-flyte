@@ -30,12 +30,12 @@ resource "aws_acm_certificate_validation" "dns_validated_cert" {
   validation_record_fqdns = [for record in aws_route53_record.cert_validation_record : record.fqdn]
 }
 
-resource "null_resource" "elb_envvar" {
-   provisioner "local-exec" {
-    command = "export TF_VAR_flyte_elb_hostname=$(kubectl get ingress -n flyte -o json | jq -r '.items[0].status.loadBalancer.ingress[0].hostname')"
-  }
-  depends_on = [ aws_acm_certificate_validation.dns_validated_cert, helm_release.flyte-core ]
-}
+#resource "null_resource" "elb_envvar" {
+ #  provisioner "local-exec" {
+  #  command = "export TF_VAR_flyte_elb_hostname=$(kubectl get ingress -n flyte -o json | jq -r '.items[0].status.loadBalancer.ingress[0].hostname')"
+  #}
+  #depends_on = [ aws_acm_certificate_validation.dns_validated_cert, helm_release.flyte-core ]
+#}
 
 variable "flyte_elb_hostname" {
   type        = string
@@ -63,7 +63,7 @@ resource "aws_route53_record" "elb_record" {
 
   allow_overwrite = true
 
-depends_on = [ module.eks, helm_release.flyte-core, null_resource.elb_envvar ]
+depends_on = [ module.eks, helm_release.flyte-core ]
 }
 # Change domain_name to match the name you'll use to connect to Flyte
 
