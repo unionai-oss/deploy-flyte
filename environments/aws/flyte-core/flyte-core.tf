@@ -1,4 +1,5 @@
 #Installs the flyte-core Helm chart in the flyte namespace using the outputs of Terraform modules
+data "aws_caller_identity" "current" {}
 resource "helm_release" "flyte-core" {
   name             = "flyte-core"
   namespace        = "flyte"
@@ -27,9 +28,9 @@ provisioner "local-exec" {
     
   }
 
-provisioner "local-exec" {
-    command = "./scripts/get_elb.sh"
-    }
+#provisioner "local-exec" {
+ #   command = "./scripts/get_elb.sh"
+  #  }
 }
 
 
