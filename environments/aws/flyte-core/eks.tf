@@ -12,19 +12,15 @@ locals {
     subnet_ids          = module.vpc.private_subnets
   }
   mngs = {
-    services = {
-      max_size = 3
-      min_size = 1
-    }
+   
+   #In any of these blocks, insert min_size to activate the creation of the node group with a minimum number of nodes
     worker-on-demand = {
       dedicated_node_role = "worker"
-      min_size            = 1
       max_size            = 5
       root_disk_size_gb   = 500
     }
     worker-spot = {
       dedicated_node_role = "worker"
-      min_size            = 1
       max_size            = 10
       root_disk_size_gb   = 500
       spot                = true
@@ -38,14 +34,14 @@ locals {
     worker-large-spot = {
       dedicated_node_role = "worker"
       instance_type       = "t3.2xlarge"
-      max_size            = 10
+      max_size            = 5
       root_disk_size_gb   = 500
       spot                = true
     }
     worker-gpu-on-demand = {
       dedicated_node_role = "worker"
       instance_type       = "g4dn.metal"
-      gpu_accelerator     = "nvidia-tesla-t4"
+      gpu_accelerator     = "nvidia-tesla-t4" #use any of the flytekit-supported constants to specify a GPU device model: https://github.com/flyteorg/flytekit/blob/daeff3f5f0f36a1a9a1f86c5e024d1b76cdfd5cb/flytekit/extras/accelerators.py#L132-L160
       gpu_count           = 8
       max_size            = 3
       local_ssd_size_gb   = 1800
