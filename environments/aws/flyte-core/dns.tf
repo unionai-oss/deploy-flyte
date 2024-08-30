@@ -57,9 +57,6 @@ resource "helm_release" "external_dns" {
   chart      = "external-dns"
   version    = "1.12.1"
 
-  values = [
-    "${file("externaldns-values.yaml")}"
-  ]
 
   set {
     name  = "provider"

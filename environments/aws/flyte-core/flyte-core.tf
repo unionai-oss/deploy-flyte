@@ -14,7 +14,9 @@ resource "helm_release" "flyte-core" {
     rds_postgres_database_name  =  module.flyte_db.cluster_database_name
     rds_postgres_database_host  =  module.flyte_db.cluster_endpoint
     bucket_name                 =  module.flyte_data.s3_bucket_id
-    flyte_backend_role_arn      = module.flyte_backend_irsa_role.iam_role_arn
+    flytepropeller_role_arn     =  module.flyte_backend_irsa_role["flytepropeller"].iam_role_arn
+    flyteadmin_role_arn         =  module.flyte_backend_irsa_role["flyteadmin"].iam_role_arn
+    datacatalog_role_arn        =  module.flyte_backend_irsa_role["datacatalog"].iam_role_arn
     flyte_tasks_role_arn        = module.flyte_worker_irsa_role.iam_role_arn
     acm_certificate             = aws_acm_certificate.flyte_cert.arn
     aws_compute_region          = var.aws_region

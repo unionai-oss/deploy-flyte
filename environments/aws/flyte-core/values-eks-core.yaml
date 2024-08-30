@@ -11,7 +11,9 @@ userSettings:
   logGroup: <LOG_GROUP_NAME>
   redisHostUrl: <REDIS_HOST_URL>
   redisHostKey: <REDIS_HOST_KEY>
-  backendIAMRole: ${flyte_backend_role_arn}     
+  propellerIAMRole: ${flytepropeller_role_arn}     
+  adminIAMRole: ${flyteadmin_role_arn} 
+  datacatalogIAMRole: ${datacatalog_role_arn} 
   workerIAMRole: ${flyte_tasks_role_arn} 
   ingressHost: ${ingress_host}
 #
