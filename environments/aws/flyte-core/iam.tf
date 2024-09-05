@@ -41,7 +41,7 @@ resource "aws_iam_policy" "flyte_backend_iam_policy" {
 module "flyte_backend_irsa_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "5.11.2"
-  
+  assume_role_condition_test = "StringEquals" 
   role_name = "${local.name_prefix}-backend-role"
   role_policy_arns = {
     default = aws_iam_policy.flyte_backend_iam_policy.arn
@@ -68,8 +68,7 @@ resource "aws_iam_policy" "flyte_worker_iam_policy" {
 module "flyte_worker_irsa_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "5.11.2"
-
-  assume_role_condition_test = "StringLike"
+  assume_role_condition_test = "StringEquals"
   role_name                  = "${local.name_prefix}-flyte-worker"
   role_policy_arns = {
     default = aws_iam_policy.flyte_worker_iam_policy.arn
@@ -78,7 +77,7 @@ module "flyte_worker_irsa_role" {
   oidc_providers = {
     default = {
       provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["*:*"]
+      namespace_service_accounts = local.flyte_worker_wi_members
     }
   }
 }

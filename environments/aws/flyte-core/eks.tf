@@ -1,3 +1,6 @@
+data "aws_availability_zones" "available" { state = "available" }
+data "aws_region" "current" {}
+
 locals {
   mng_defaults = {
     dedicated_node_role = null
