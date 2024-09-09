@@ -19,6 +19,7 @@ locals {
    #In any of these blocks, insert min_size to activate the creation of the node group with a minimum number of nodes
     worker-on-demand = {
       dedicated_node_role = "worker"
+      min_size            = 2
       max_size            = 5
       root_disk_size_gb   = 500
     }
@@ -173,39 +174,7 @@ data "aws_eks_cluster_auth" "default" {
   name = module.eks.cluster_name
 }
 
-data "aws_iam_policy" "cloudwatch_agent_server_policy" {
-  name = "CloudWatchAgentServerPolicy"
-}
 
-module "aws_cloudwatch_metrics_irsa_role" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.11.2"
-
-  role_name = "${local.name_prefix}-aws-cloudwatch-metrics"
-  role_policy_arns = {
-    default = data.aws_iam_policy.cloudwatch_agent_server_policy.arn
-  }
-
-  oidc_providers = {
-    default = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:aws-cloudwatch-metrics"]
-    }
-  }
-}
-
-data "aws_iam_policy_document" "aws_for_fluent_bit_policy" {
-  source_policy_documents = [data.aws_iam_policy.cloudwatch_agent_server_policy.policy]
-
-  # Fluent-bit CloudWatch plugin manages log groups and retention policies
-  statement {
-    actions = [
-      "logs:DeleteRetentionPolicy",
-      "logs:PutRetentionPolicy"
-    ]
-    resources = ["*"]
-  }
-}
 
 data "http" "alb-controller-policy-source" {
   url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.4.7/docs/install/iam_policy.json"
@@ -254,32 +223,7 @@ module "cluster_autoscaler_irsa_role" {
   }
 }
 
-resource "helm_release" "aws_cloudwatch_metrics" {
-  namespace = "kube-system"
-  wait      = true
-  timeout   = 600
 
-  name = "aws-cloudwatch-metrics"
-
-  repository = "https://aws.github.io/eks-charts"
-  chart      = "aws-cloudwatch-metrics"
-  version    = "0.0.8"
-
-  set {
-    name  = "clusterName"
-    value = module.eks.cluster_name
-  }
-
-  set {
-    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-    value = module.aws_cloudwatch_metrics_irsa_role.iam_role_arn
-  }
-
-  set {
-    name  = "tolerations[0].operator"
-    value = "Exists"
-  }
-}
 
 resource "helm_release" "aws_cluster_autoscaler" {
   namespace = "kube-system"
@@ -306,6 +250,7 @@ resource "helm_release" "aws_cluster_autoscaler" {
     name  = "rbac.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
     value = module.cluster_autoscaler_irsa_role.iam_role_arn
   }
+  depends_on = [ module.eks ]
 }
 
 
@@ -330,5 +275,6 @@ resource "helm_release" "aws_load_balancer_controller" {
     name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
     value = module.aws_load_balancer_controller_irsa_role.iam_role_arn
   }
+  depends_on = [ module.eks ]
 }
 
