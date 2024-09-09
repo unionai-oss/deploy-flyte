@@ -1,7 +1,7 @@
 #Installs the flyte-core Helm chart in the flyte namespace using the outputs of Terraform modules
 data "aws_caller_identity" "current" {}
 resource "helm_release" "flyte-core" {
-  name             = "flyte-core"
+  name             = "flyte-coretf"
   namespace        = "flyte"
   create_namespace = true
   repository       = "https://flyteorg.github.io/flyte"
@@ -22,15 +22,12 @@ resource "helm_release" "flyte-core" {
     }
     )
   ]
-  depends_on = [module.eks,module.flyte_db,module.flyte_worker_irsa_role,module.flyte_backend_irsa_role, aws_acm_certificate_validation.dns_validated_cert]
+  depends_on = [module.eks,module.flyte_db,module.flyte_worker_irsa_role,module.flyte_backend_irsa_role, aws_acm_certificate_validation.dns_validated_cert,helm_release.aws_load_balancer_controller]
 provisioner "local-exec" {
     command = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name} --profile ${var.aws_cli_profile}"
     
   }
 
-#provisioner "local-exec" {
- #   command = "./scripts/get_elb.sh"
-  #  }
 }
 
 
