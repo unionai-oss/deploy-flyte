@@ -8,12 +8,13 @@ userSettings:
 # Learn more https://docs.flyte.org/en/latest/concepts/data_management.html#understand-how-flyte-handles-data 
   bucketName: ${bucket_name} 
   rawDataBucketName: ${bucket_name}  
-  logGroup: <LOG_GROUP_NAME>
   redisHostUrl: <REDIS_HOST_URL>
   redisHostKey: <REDIS_HOST_KEY>
   backendIAMRole: ${flyte_backend_role_arn}      
   workerIAMRole: ${flyte_tasks_role_arn} 
   ingressHost: ${ingress_host}
+  deploymentName: ${deployment_name}
+
 #
 # FLYTEADMIN
 #
@@ -28,7 +29,12 @@ flyteadmin:
     annotations:
       eks.amazonaws.com/role-arn: "{{ .Values.userSettings.backendIAMRole }}"
   serviceMonitor:
-    enabled: false
+    enabled: true
+    labels:
+      release: kube-prometheus-stack
+    selectorLabels:
+      - app.kubernetes.io/instance: flyte-coretf
+      - app.kubernetes.io/name: flyteadmin
 
   resources:
     limits:
@@ -86,9 +92,14 @@ flytepropeller:
   replicaCount: 2
   manager: false
   serviceMonitor:
-    enabled: false
+    enabled: true
+    labels:
+      release: kube-prometheus-stack
+    selectorLabels:
+      - app.kubernetes.io/instance: flyte-coretf
+      - app.kubernetes.io/name: flytepropeller
   service:
-    enabled: false
+    enabled: true
   serviceAccount:
     # -- If the service account is created by you, make this false
     create: true
@@ -234,7 +245,7 @@ configmap:
           - "*"
         allowedHeaders:
           - "Content-Type"
-
+    
   task_resource_defaults:
     task_resources:
       defaults:
@@ -303,15 +314,9 @@ configmap:
   task_logs:
     plugins:
       logs:
-        kubernetes-enabled: false
-        # -- One option is to enable cloudwatch logging for EKS, update the region and log group accordingly
-        # You can even disable this
         cloudwatch-enabled: true
-        # -- region where logs are hosted
-        cloudwatch-region: "{{ .Values.userSettings.accountRegion }}"
-        # -- cloudwatch log-group
-        cloudwatch-log-group: "{{ .Values.userSettings.logGroup }}"
-
+        cloudwatch-template-uri: "https://console.aws.amazon.com/cloudwatch/home?region={{ .Values.userSettings.accountRegion}}#logsV2:log-groups/log-group/$252Faws$252Fcontainerinsights$252F{{ .Values.userSettings.deploymentName }}$252Fapplication$3FlogStreamNameFilter$3Dvar.log.containers.{{`{{.podName}}`}}_{{`{{.namespace}}`}}_{{`{{.containerName}}`}}" 
+  
 # ----------------------------------------------------------------
 # Optional Modules
 # Flyte built extensions that enable various additional features in Flyte.
@@ -423,3 +428,5 @@ cluster_resource_manager:
 
 sparkoperator:
   enabled: false
+
+
