@@ -90,7 +90,7 @@ datacatalog:
 
 flytepropeller:
   replicaCount: 2
-  manager: false
+  manager: true
   serviceMonitor:
     enabled: true
     labels:
@@ -271,6 +271,16 @@ configmap:
           rate: 100
           capacity: 1000
 
+  
+    manager:
+      pod-application: flytepropeller
+      pod-template-container-name: flytepropeller
+      pod-template-name: flytepropeller-template
+      pod-template-namespace: flyte
+      shard:
+        type: Hash
+        shard-count: 4
+
   # -- Resource manager configuration
   resource_manager:
     # -- resource manager configuration
@@ -335,22 +345,23 @@ workflow_scheduler:
 # Workflow notifications module is an optional dependency. Flyte uses cloud native pub-sub systems to notify users of
 # various events in their workflows
 workflow_notifications:
-  enabled: false
+  enabled: true
   config:
     notifications:
       type: aws
-      region: "{{ .Values.userSettings.accountRegion }}"
+      aws:
+        region: "{{ .Values.userSettings.accountRegion }}"
       publisher:
-        topicName: "arn:aws:sns:{{ .Values.userSettings.accountRegion }}:{{ .Values.userSettings.accountNumber }}:flyte-notifications-topic"
+        topicName: "arn:aws:sns:{{ .Values.userSettings.accountRegion }}:{{ .Values.userSettings.accountNumber }}:{{ .Values.userSettings.deploymentName }}-topic"
       processor:
-        queueName: flyte-notifications-queue
+        queueName: "{{ .Values.userSettings.deploymentName }}-queue"
         accountId: "{{ .Values.userSettings.accountNumber }}"
       emailer:
-        subject: "Flyte: {{ project }}/{{ domain }}/{{ launch_plan.name }} has {{ phase }}"
-        sender: "flyte@example.com"
+        subject: "Notice: {{ project }}/{{ domain }}/{{ launch_plan.name }} has {{ phase }}"
+        sender: "david.espejo@union.ai"
         body: |
          "Execution {{ workflow.project }}/{{ workflow.domain }}/{{ workflow.name }}/{{ name }} has {{ phase }}.
-          Details: https://flyte.example.com/console/projects/{{ project }}/domains/{{ domain }}/executions/{{ name }}.
+          Details: https://"{{ .Values.userSettings.ingressHost }}"/console/projects/{{ project }}/domains/{{ domain }}/executions/{{ name }}.
           {{ error }}"
 
 # -- Configuration for the Cluster resource manager component. This is an optional component, that enables automatic
@@ -367,7 +378,7 @@ cluster_resource_manager:
             - projectQuotaCpu:
                 value: "5"
             - projectQuotaMemory:
-                value: "4000Mi"
+                value: "6000Mi"
             - defaultIamRole:
                 value: "{{ .Values.userSettings.workerIAMRole}} "
         - staging:
@@ -381,7 +392,7 @@ cluster_resource_manager:
             - projectQuotaCpu:
                 value: "4"
             - projectQuotaMemory:
-                value: "3000Mi"
+                value: "5000Mi"
             - defaultIamRole:
                 value: "{{ .Values.userSettings.workerIAMRole}} "
 
