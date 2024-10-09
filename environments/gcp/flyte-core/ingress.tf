@@ -43,7 +43,14 @@ resource kubernetes_secret "flyte-tls-secret" {
   metadata {
    name = "flyte-secret-tls"
    namespace = "flyte"
-  
+
+  }
+
+  lifecycle {
+    ignore_changes = [
+      metadata[0].annotations,
+      metadata[0].labels,
+    ]
   }
 
 }
