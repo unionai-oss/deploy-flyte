@@ -35,6 +35,34 @@ data "aws_iam_policy_document" "sns_topic_policy" {
   policy_id = "__default_policy_ID"
 
   statement {
+    sid    = "AllowSNSPublish"
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["sns.amazonaws.com"]
+    }
+    actions   = ["SNS:Publish"]
+    resources = [aws_sns_topic.flyte_topic.arn]
+  }
+
+  statement {
+    sid    = "AllowSQSSubscribeReceive"
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["sqs.amazonaws.com"]
+    }
+    actions   = ["SNS:Subscribe", "SNS:Receive"]
+    resources = [aws_sns_topic.flyte_topic.arn]
+    condition {
+      test     = "ArnEquals"
+      variable = "aws:SourceArn"
+      values   = [aws_sqs_queue.terraform_queue.arn]
+    }
+  }
+
+  statement {
+    sid    = "AllowAccountOwnerFullAccess"
     actions = [
       "SNS:Subscribe",
       "SNS:SetTopicAttributes",
@@ -57,8 +85,6 @@ data "aws_iam_policy_document" "sns_topic_policy" {
     resources = [
       aws_sns_topic.flyte_topic.arn,
     ]
-
-    sid = "__default_statement_ID"
   }
 }
 ## SQS Subscriptions
@@ -78,23 +104,26 @@ resource "aws_sqs_queue" "terraform_queue" {
 resource "aws_sqs_queue_policy" "default" {
 
   policy    = data.aws_iam_policy_document.sqs_queue_policy.json
-  queue_url = aws_sqs_queue.terraform_queue.id
+  queue_url = aws_sqs_queue.terraform_queue.url
 }
 
 data "aws_iam_policy_document" "sqs_queue_policy" {
   statement {
-    actions = ["SQS:SendMessage"]
     effect = "Allow"
-
     principals {
-      type        = "AWS"
-      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+      type        = "Service"
+      identifiers = ["sns.amazonaws.com"]
     }
+    actions   = ["SQS:SendMessage"]
     resources = [aws_sqs_queue.terraform_queue.arn]
-
-    sid = "__default_statement_ID"
+    condition {
+      test     = "ArnEquals"
+      variable = "aws:SourceArn"
+      values   = [aws_sns_topic.flyte_topic.arn]
+    }
   }
-   statement {
+
+  statement {
     # Accept the risk
     #tfsec:ignore:aws-sqs-no-wildcards-in-policy-documents
     actions = ["SQS:SendMessage"]

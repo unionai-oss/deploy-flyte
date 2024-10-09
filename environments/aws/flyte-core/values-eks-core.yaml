@@ -14,7 +14,9 @@ userSettings:
   workerIAMRole: ${flyte_tasks_role_arn} 
   ingressHost: ${ingress_host}
   deploymentName: ${deployment_name}
-
+  snsTopicArn: ${sns_topic_arn}
+  accountNumber: "${account_number}"
+  sqsQueueName: ${sqs_queue_name}
 #
 # FLYTEADMIN
 #
@@ -352,16 +354,16 @@ workflow_notifications:
       aws:
         region: "{{ .Values.userSettings.accountRegion }}"
       publisher:
-        topicName: "arn:aws:sns:{{ .Values.userSettings.accountRegion }}:{{ .Values.userSettings.accountNumber }}:{{ .Values.userSettings.deploymentName }}-topic"
+        topicName: "{{ .Values.userSettings.snsTopicArn }}"
       processor:
-        queueName: "{{ .Values.userSettings.deploymentName }}-queue"
+        queueName: "{{ .Values.userSettings.sqsQueueName }}"
         accountId: "{{ .Values.userSettings.accountNumber }}"
       emailer:
         subject: "Notice: {{ project }}/{{ domain }}/{{ launch_plan.name }} has {{ phase }}"
         sender: "david.espejo@union.ai"
         body: |
-         "Execution {{ workflow.project }}/{{ workflow.domain }}/{{ workflow.name }}/{{ name }} has {{ phase }}.
-          Details: https://"{{ .Values.userSettings.ingressHost }}"/console/projects/{{ project }}/domains/{{ domain }}/executions/{{ name }}.
+          Execution {{ workflow.project }}/{{ workflow.domain }}/{{ workflow.name }}/{{ name }} has {{ phase }}.
+          Details: <a href="https://{{ .Values.userSettings.ingressHost }}/console/projects/{{ project }}/domains/{{ domain }}/executions/{{ name }}"
           {{ error }}"
 
 # -- Configuration for the Cluster resource manager component. This is an optional component, that enables automatic
