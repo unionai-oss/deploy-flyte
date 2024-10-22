@@ -31,7 +31,7 @@ resource "azurerm_kubernetes_cluster" "flyte" {
     node_count          = 1
     min_count           = 1
     max_count           = 10
-    enable_auto_scaling = true
+    auto_scaling_enabled = true
   }
 
   identity {
@@ -52,7 +52,7 @@ depends_on = [ azurerm_kubernetes_cluster.flyte ]
 name = "gpupool"
 kubernetes_cluster_id = azurerm_kubernetes_cluster.flyte.id
 node_count = local.gpu_settings.gpu_node_pool_count
-enable_auto_scaling = true
+auto_scaling_enabled  = true
 min_count           = local.gpu_settings.gpu_node_pool_min_count
 max_count           = local.gpu_settings.gpu_node_pool_max_count
 vm_size             = local.gpu_settings.gpu_machine_type

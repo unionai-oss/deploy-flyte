@@ -10,8 +10,7 @@ terraform {
       version = ">= 1.14.0"
     }
   }
-  # https://www.terraform.io/language/settings/backends/azurerm
-  backend "azurerm" {}
+  
 }
 
 provider "kubectl" {
