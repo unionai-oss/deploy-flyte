@@ -1,7 +1,12 @@
 
 
+resource "random_string" "storage_account_suffix" {
+  length  = 6
+  special = false
+  upper   = false
+}
 resource "azurerm_storage_account" "flyte" {
-  name                          = "${local.tenant}${local.environment}"
+  name                          = "${local.tenant}${local.environment}${random_string.storage_account_suffix.result}"
   resource_group_name           = azurerm_resource_group.flyte.name
   location                      = azurerm_resource_group.flyte.location
   account_tier                  = "Standard"

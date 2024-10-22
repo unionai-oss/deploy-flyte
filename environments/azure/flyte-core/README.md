@@ -26,12 +26,13 @@ The modules in this repo have been tested with Terraform and OpenTofu, and will 
     - Resource Group
     - Storage account with default settings
     - Storage container for the Terraform state
-- Put these values into [backend.tfvars](./backend.tfvars)
+- Put these values into [backend.tf](./backend.tf)
 
 # Update locals values
 
 - Go to [locals.tf](./locals.tf) and update the values to match your desired configuration.
 
+- To automatically provide the input variables that the module needs you can uncomment and edit the values on [terraform.tfvars](./terraform.tfvars) 
 
 # Create Cluster & Cluster Resources
 1. From the `environments/azure/flyte-core` folder, initialize the Terraform backend:
