@@ -346,25 +346,7 @@ workflow_scheduler:
 # --
 # Workflow notifications module is an optional dependency. Flyte uses cloud native pub-sub systems to notify users of
 # various events in their workflows
-workflow_notifications:
-  enabled: true
-  config:
-    notifications:
-      type: aws
-      aws:
-        region: "{{ .Values.userSettings.accountRegion }}"
-      publisher:
-        topicName: "{{ .Values.userSettings.snsTopicArn }}"
-      processor:
-        queueName: "{{ .Values.userSettings.sqsQueueName }}"
-        accountId: "{{ .Values.userSettings.accountNumber }}"
-      emailer:
-        subject: "Notice: {{ project }}/{{ domain }}/{{ launch_plan.name }} has {{ phase }}"
-        sender: "david.espejo@union.ai"
-        body: |
-          Execution {{ workflow.project }}/{{ workflow.domain }}/{{ workflow.name }}/{{ name }} has {{ phase }}.
-          Details: <a href="https://{{ .Values.userSettings.ingressHost }}/console/projects/{{ project }}/domains/{{ domain }}/executions/{{ name }}"
-          {{ error }}"
+
 
 # -- Configuration for the Cluster resource manager component. This is an optional component, that enables automatic
 # cluster configuration. This is useful to set default quotas, manage namespaces etc that map to a project/domain
