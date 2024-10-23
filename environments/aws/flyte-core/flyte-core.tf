@@ -19,10 +19,6 @@ resource "helm_release" "flyte-core" {
     acm_certificate             = aws_acm_certificate.flyte_cert.arn
     aws_compute_region          = var.aws_region
     ingress_host                = local.domain_name
-    deployment_name             = local.name_prefix
-    sns_topic_arn               = aws_sns_topic.flyte_topic.arn
-    account_number              = data.aws_caller_identity.current.account_id
-    sqs_queue_name              = aws_sqs_queue.terraform_queue.name
     }
     )
   ]

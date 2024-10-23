@@ -13,10 +13,7 @@ userSettings:
   backendIAMRole: ${flyte_backend_role_arn}      
   workerIAMRole: ${flyte_tasks_role_arn} 
   ingressHost: ${ingress_host}
-  deploymentName: ${deployment_name}
-  snsTopicArn: ${sns_topic_arn}
-  accountNumber: "${account_number}"
-  sqsQueueName: ${sqs_queue_name}
+  
 #
 # FLYTEADMIN
 #
