@@ -19,6 +19,7 @@ resource "helm_release" "flyte-core" {
     acm_certificate             = aws_acm_certificate.flyte_cert.arn
     aws_compute_region          = var.aws_region
     ingress_host                = local.domain_name
+    deployment_name             = local.name_prefix
     }
     )
   ]
