@@ -27,14 +27,6 @@ flyteadmin:
     create: true
     annotations:
       eks.amazonaws.com/role-arn: "{{ .Values.userSettings.backendIAMRole }}"
-  serviceMonitor:
-    enabled: true
-    labels:
-      release: kube-prometheus-stack
-    selectorLabels:
-      - app.kubernetes.io/instance: flyte-coretf
-      - app.kubernetes.io/name: flyteadmin
-
   resources:
     limits:
       ephemeral-storage: 200Mi
@@ -89,16 +81,7 @@ datacatalog:
 
 flytepropeller:
   replicaCount: 2
-  manager: true
-  serviceMonitor:
-    enabled: true
-    labels:
-      release: kube-prometheus-stack
-    selectorLabels:
-      - app.kubernetes.io/instance: flyte-coretf
-      - app.kubernetes.io/name: flytepropeller
-  service:
-    enabled: true
+  manager: false
   serviceAccount:
     # -- If the service account is created by you, make this false
     create: true
