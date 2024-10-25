@@ -30,8 +30,6 @@ provisioner "local-exec" {
   }
 
 }
-
-
 output "flyte_endpoint" {
    value= local.domain_name
 }
