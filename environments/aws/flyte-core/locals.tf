@@ -11,7 +11,6 @@ locals {
   flyte_domains          = ["development", "staging", "production"]
 }
 
-
 data "aws_route53_zone" "zone" {
   name = "fthwdemo.com"  # Change this to your Route53 managed zone
 }
