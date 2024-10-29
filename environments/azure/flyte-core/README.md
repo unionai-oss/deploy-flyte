@@ -23,10 +23,9 @@ The modules in this repo have been tested with Terraform and OpenTofu, and will 
 # Configure the Terraform backend
 
 - Once logged in, create a new:
-    - Resource Group
     - Storage account with default settings
     - Storage container for the Terraform state
-- Put these values into [backend.tf](./backend.tf)
+- Put these values, including the Resource Group where the above resources were created, into [backend.tf](./backend.tf)
 
 # Update locals values
 
@@ -34,7 +33,7 @@ The modules in this repo have been tested with Terraform and OpenTofu, and will 
 
 - To automatically provide the input variables that the module needs you can uncomment and edit the values on [terraform.tfvars](./terraform.tfvars) 
 
-# Create Cluster & Cluster Resources
+# Deploy dependencies and install Flyte
 1. From the `environments/azure/flyte-core` folder, initialize the Terraform backend:
 
 ```bash
@@ -58,7 +57,7 @@ Outputs:
 cluster_endpoint = "flytedeploy01.eastus.cloudapp.azure.com"
 ```
 
-# Testing your deployment
+# Test your deployment
 
 1. Verify Flyte's backend status
 
@@ -189,8 +188,7 @@ def gpu_available() -> bool:
 ```
 > Learn more about [accelerators in flytekit](https://docs.flyte.org/en/latest/api/flytekit/extras.accelerators.html)
 
-### 3. Request a GPU partition
--  Go to `values-aks.yaml` and uncomment the `gpu-partition-size-node-label` key under `configmap.k8s.plugins.k8s`. This label should already be applied to the AKS nodes in the GPU-enabled node pool. Flyte will inject a matching `nodeAffinity` config to the Pods that execute Tasks where the user requested a partition.  
+### 3. Request a GPU partition 
 - Go to `aks.tf` and adjust the value of the `locals.partition_size` key to your desired GPU partition size. 
 > Learn more about the [supported partition profiles for NVIDIA A100 devices](https://developer.nvidia.com/blog/getting-the-most-out-of-the-a100-gpu-with-multi-instance-gpu/#mig_partitioning_and_gpu_instance_profiles)
 
@@ -220,7 +218,7 @@ Learn more about GPU configuration in the [Flyte docs](https://docs.flyte.org/en
 
 ## How to tear down your deployment
 
-1. Once you're finished testing/using Flyte, just invoke the following command:
+1. Once you're done testing/using Flyte, just invoke the following command:
 
 ```bash
 terraform destroy
