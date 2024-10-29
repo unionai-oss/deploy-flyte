@@ -1,3 +1,6 @@
+data "aws_availability_zones" "available" { state = "available" }
+data "aws_region" "current" {}
+
 locals {
   mng_defaults = {
     dedicated_node_role = null
@@ -12,19 +15,16 @@ locals {
     subnet_ids          = module.vpc.private_subnets
   }
   mngs = {
-    services = {
-      max_size = 3
-      min_size = 1
-    }
+   
+   #In any of these blocks, insert min_size to activate the creation of the node group with a minimum number of nodes
     worker-on-demand = {
       dedicated_node_role = "worker"
-      min_size            = 1
+      min_size            = 2
       max_size            = 5
       root_disk_size_gb   = 500
     }
     worker-spot = {
       dedicated_node_role = "worker"
-      min_size            = 1
       max_size            = 10
       root_disk_size_gb   = 500
       spot                = true
@@ -38,14 +38,14 @@ locals {
     worker-large-spot = {
       dedicated_node_role = "worker"
       instance_type       = "t3.2xlarge"
-      max_size            = 10
+      max_size            = 5
       root_disk_size_gb   = 500
       spot                = true
     }
     worker-gpu-on-demand = {
       dedicated_node_role = "worker"
       instance_type       = "g4dn.metal"
-      gpu_accelerator     = "nvidia-tesla-t4"
+      gpu_accelerator     = "nvidia-tesla-t4" #use any of the flytekit-supported constants to specify a GPU device model: https://github.com/flyteorg/flytekit/blob/daeff3f5f0f36a1a9a1f86c5e024d1b76cdfd5cb/flytekit/extras/accelerators.py#L132-L160
       gpu_count           = 8
       max_size            = 3
       local_ssd_size_gb   = 1800
@@ -138,8 +138,11 @@ module "eks" {
             effect = "NO_SCHEDULE"
           }
         ]
+        
     }
+    
   }
+  
 }
 
 resource "aws_autoscaling_group_tag" "eks_managed_node_group_asg_tag" {
@@ -171,39 +174,7 @@ data "aws_eks_cluster_auth" "default" {
   name = module.eks.cluster_name
 }
 
-data "aws_iam_policy" "cloudwatch_agent_server_policy" {
-  name = "CloudWatchAgentServerPolicy"
-}
 
-module "aws_cloudwatch_metrics_irsa_role" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.11.2"
-
-  role_name = "${local.name_prefix}-aws-cloudwatch-metrics"
-  role_policy_arns = {
-    default = data.aws_iam_policy.cloudwatch_agent_server_policy.arn
-  }
-
-  oidc_providers = {
-    default = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:aws-cloudwatch-metrics"]
-    }
-  }
-}
-
-data "aws_iam_policy_document" "aws_for_fluent_bit_policy" {
-  source_policy_documents = [data.aws_iam_policy.cloudwatch_agent_server_policy.policy]
-
-  # Fluent-bit CloudWatch plugin manages log groups and retention policies
-  statement {
-    actions = [
-      "logs:DeleteRetentionPolicy",
-      "logs:PutRetentionPolicy"
-    ]
-    resources = ["*"]
-  }
-}
 
 data "http" "alb-controller-policy-source" {
   url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.4.7/docs/install/iam_policy.json"
@@ -252,32 +223,7 @@ module "cluster_autoscaler_irsa_role" {
   }
 }
 
-resource "helm_release" "aws_cloudwatch_metrics" {
-  namespace = "kube-system"
-  wait      = true
-  timeout   = 600
 
-  name = "aws-cloudwatch-metrics"
-
-  repository = "https://aws.github.io/eks-charts"
-  chart      = "aws-cloudwatch-metrics"
-  version    = "0.0.8"
-
-  set {
-    name  = "clusterName"
-    value = module.eks.cluster_name
-  }
-
-  set {
-    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-    value = module.aws_cloudwatch_metrics_irsa_role.iam_role_arn
-  }
-
-  set {
-    name  = "tolerations[0].operator"
-    value = "Exists"
-  }
-}
 
 resource "helm_release" "aws_cluster_autoscaler" {
   namespace = "kube-system"
@@ -304,6 +250,7 @@ resource "helm_release" "aws_cluster_autoscaler" {
     name  = "rbac.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
     value = module.cluster_autoscaler_irsa_role.iam_role_arn
   }
+  depends_on = [ module.eks ]
 }
 
 
@@ -328,5 +275,49 @@ resource "helm_release" "aws_load_balancer_controller" {
     name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
     value = module.aws_load_balancer_controller_irsa_role.iam_role_arn
   }
+  depends_on = [ module.eks ]
 }
 
+data "aws_iam_policy" "cloudwatch_agent_server_policy" {
+  name = "CloudWatchAgentServerPolicy"
+}
+
+module "aws_cloudwatch_metrics_irsa_role" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "5.11.2"
+
+  role_name = "${local.name_prefix}-aws-cloudwatch-metrics"
+  role_policy_arns = {
+    default = data.aws_iam_policy.cloudwatch_agent_server_policy.arn
+  }
+
+  oidc_providers = {
+    default = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = ["kube-system:aws-cloudwatch-metrics"]
+    }
+  }
+}
+
+resource "helm_release" "aws_cloudwatch_observability" {
+  namespace = "amazon-cloudwatch"
+  create_namespace = true
+  wait = true
+
+  name = "amazon-cloudwatch-observability"
+  repository = "https://aws-observability.github.io/helm-charts"
+  chart = "amazon-cloudwatch-observability"
+  version = "2.0.1"
+
+  set {
+    name = "clusterName"
+    value = module.eks.cluster_name 
+  }
+  
+   set {
+    name = "region"
+    value = data.aws_region.current.name
+  }
+
+
+}

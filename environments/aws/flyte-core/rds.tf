@@ -4,7 +4,7 @@ module "flyte_db" {
 
   name           = "${local.name_prefix}-db"
   engine         = "aurora-postgresql"
-  engine_version = "14.6"
+  engine_version = "14.9"
   instance_class = "db.t3.medium"
   instances = {
     0 = {}
@@ -14,26 +14,12 @@ module "flyte_db" {
   subnets             = module.vpc.database_subnets
   vpc_id              = module.vpc.vpc_id
 
-  database_name          = "flyteadmin"
-  master_username        = "flyteadmin"
+  database_name          = "flyte"
+  master_username        = "flyte"
   
 #Comment to disable random password generation for the DB
   random_password_length = 63
 
 #Uncomment and update the value to set a specific password for the DB.
   #master_password = "my-db-password"
-  
- 
-
- 
-}
-
-output "cluster_master_password" {
-  value       = module.flyte_db.cluster_master_password
-  sensitive   = true
-}
-
-output "cluster_endpoint" {
-  value = module.flyte_db.cluster_endpoint
-  sensitive = false
 }
