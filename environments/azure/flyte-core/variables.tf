@@ -34,6 +34,3 @@ variable "namespace_filtering_mode_for_data_collection" {
   default = "Off"
 }
 
-variable "namespaces_for_data_collection" {
-  default = ["kube-system", "gatekeeper-system", "flyte", "flytesnacks-development"] #automate this
-}

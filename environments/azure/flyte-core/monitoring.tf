@@ -1,12 +1,13 @@
-locals {
-  flyte_monitored_ns = toset([
-    for tpl in setproduct(
-      local.flyte_projects,
-      local.flyte_domains,
-    ) : format("%s-%s", tpl...)
-  ])
+locals{
+project_domain_combinations = [
+    for pair in setproduct(local.flyte_projects, local.flyte_domains) :
+    "${pair[0]}-${pair[1]}"
+  ]
+  namespaces_for_data_collection = concat(
+    ["kube-system", "gatekeeper-system", "flyte",
+    local.project_domain_combinations]
+  )
 }
-
 resource "azurerm_log_analytics_workspace" "flyte_logs" {
   name                = "${local.tenant}-${local.environment}"
   location            = azurerm_resource_group.flyte.location
@@ -52,7 +53,7 @@ resource "azurerm_monitor_data_collection_rule" "dcr" {
         "dataCollectionSettings" : {
             "interval": var.data_collection_interval,
             "namespaceFilteringMode": var.namespace_filtering_mode_for_data_collection,
-            "namespaces": var.namespaces_for_data_collection
+            "namespaces": local.namespaces_for_data_collection
             "enableContainerLogV2": true
         }
       })
