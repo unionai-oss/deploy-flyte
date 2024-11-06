@@ -24,6 +24,7 @@ resource "azurerm_kubernetes_cluster" "flyte" {
   dns_prefix                = "${local.tenant}${local.environment}flytetf"
   workload_identity_enabled = true
   oidc_issuer_enabled       = true
+  automatic_upgrade_channel = "stable"
 
   default_node_pool {
     name                = "cpupool"
