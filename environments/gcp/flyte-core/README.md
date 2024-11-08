@@ -124,7 +124,7 @@ insecure: false #it means, the connection uses SSL, even if it's a temporary cer
 >NOTE: in this example we're using `flyte` as the value for `local.application` and `gcp` for `local.environment` . Replace to match what you indicated in the `locals.tf` file
 
 ```bash
-gcloud iam service-accounts keys create gcp-artifact-writer.key --iam-account=flyte-gcp-registrywriter@flytetf8.iam.gserviceaccount.com
+gcloud iam service-accounts keys create gcp-artifact-writer.key --iam-account=flyte-gcp-registrywriter@<YOUR-GCP-PROJECT_ID>.iam.gserviceaccount.com
 ```
 
 2. Activate the Service Account in your gcloud session:
