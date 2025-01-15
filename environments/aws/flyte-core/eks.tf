@@ -138,7 +138,9 @@ module "eks" {
             effect = "NO_SCHEDULE"
           }
         ]
-        
+       iam_role_additional_policies = {
+        "CloudWatchAgentPolicy" = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+       }
     }
     
   }
@@ -294,7 +296,7 @@ module "aws_cloudwatch_metrics_irsa_role" {
   oidc_providers = {
     default = {
       provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:aws-cloudwatch-metrics"]
+      namespace_service_accounts = ["amazon-cloudwatch:cloudwatch-agent"]
     }
   }
 }
