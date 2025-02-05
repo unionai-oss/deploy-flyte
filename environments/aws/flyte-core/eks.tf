@@ -4,7 +4,7 @@ data "aws_region" "current" {}
 locals {
   mng_defaults = {
     dedicated_node_role = null
-    instance_type       = "t3.xlarge"
+    instance_type       = "m7i.xlarge"
     gpu_accelerator     = ""
     gpu_count           = 0
     min_size            = 0
@@ -31,13 +31,13 @@ locals {
     }
     worker-large-on-demand = {
       dedicated_node_role = "worker"
-      instance_type       = "t3.2xlarge"
+      instance_type       = "m7i.2xlarge"
       max_size            = 5
       root_disk_size_gb   = 500
     }
     worker-large-spot = {
       dedicated_node_role = "worker"
-      instance_type       = "t3.2xlarge"
+      instance_type       = "m7i.2xlarge"
       max_size            = 5
       root_disk_size_gb   = 500
       spot                = true
