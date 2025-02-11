@@ -1,5 +1,7 @@
 ## Flyte on AWS
 
+> [Read the blog about the architecture and components deployed by this implementation](https://flyte.org/blog/speed-up-time-to-production-with-flyte-on-eks-from-automation-to-multicloud)
+
 ### Customize your deployment
 1. Configure your AWS CLI with the credentials to access your account. Check out the different options in the [AWS Documentation](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html) if needed.
 
