@@ -52,7 +52,7 @@ backend "gcs" {
 ```bash
 terraform init
 ```
-9. Then:
+9. Then change to the environements/gcp/flyte-core directory and run:
 
 ```bash
 terraform plan
