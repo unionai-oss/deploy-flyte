@@ -91,7 +91,6 @@ module "eks" {
   version = "19.10.0"
 
   cluster_name                    = local.name_prefix
-  cluster_version                 = "1.24"
   cluster_endpoint_private_access = true
   cluster_endpoint_public_access  = true
   enable_irsa                     = true
